@@ -1,0 +1,43 @@
+<section class="content">
+  <div class="container-fluid mt-4">
+    <h1 class="mb-3">Storage Data</h1>
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Storehouse</th>
+          <th>Sheft</th>
+          <th>Kind</th>
+          <th>Style</th>
+          <th>Item Name</th>
+          <th>Color</th>
+          <th>Unit</th>
+          <th>Qty</th>
+          <th>Qty1</th>
+          <th>Vendor</th>
+          <th>Memo</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% storage.forEach((item, i) => { %>
+          <tr>
+            <td><%= i + 1 %></td>
+            <td><%= item.storeh %></td>
+            <td><%= item.sheft %></td>
+            <td><%= item.kind %></td>
+            <td><%= item.style %></td>
+            <td><%= item.itncna %></td>
+            <td><%= item.scolor %></td>
+            <td><%= item.unit %></td>
+            <td><%= item.qty %></td>
+            <td><%= item.qty1 %></td>
+            <td><%= item.vendno %></td>
+            <td><%= item.memo %></td>
+            <td><%= item.sdate?.toISOString().split('T')[0] || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
