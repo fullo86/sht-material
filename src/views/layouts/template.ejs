@@ -129,10 +129,26 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="/departments" class="nav-link <%= currentPath === '/departments' ? 'active' : '' %>">
+              <i class="nav-icon fas fa-users"></i>
+              <p>
+                Departments
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="/storage" class="nav-link <%= currentPath === '/storage' ? 'active' : '' %>">
               <i class="nav-icon fas fa-warehouse"></i>
               <p>
                 Storage
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/storage/log" class="nav-link <%= currentPath === '/storage/log' ? 'active' : '' %>">
+              <i class="nav-icon fas fa-history"></i>
+              <p>
+                Storage Activity
               </p>
             </a>
           </li>

@@ -6,11 +6,13 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true
     },
-    dept_code: DataTypes.STRING,
-    dept_desc: DataTypes.STRING,
+    dept_code: DataTypes.CHAR(3),
+    dept_desc: DataTypes.STRING(20),
   }, {
     tableName: 'departments',
-    timestamps: false
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   });
 
   Dept.associate = (models) => {

@@ -1,4 +1,6 @@
 const db = require('../models');
+const bcrypt = require('bcrypt');
+const { validationResult } = require('express-validator');
 const User = db.User;
 const Dept = db.Dept;
 const Role = db.Role;
@@ -48,7 +50,7 @@ const UpdateUser = async (req, res) => {
     const id = req.params.id;
     const { account, empno, vname, email, dept_id, sex } = req.body;
 
-    const user = await User.findByPk(id);
+    const user = await User.findOne({ where: { id }});
     if (!user) {
       return res.status(404).render('errors/404', { layout: false });
     }
@@ -77,21 +79,76 @@ const CreateUser = async (req, res) => {
     layout: 'layouts/template',
     title: 'Add User',
     departments,
-    roles
+    roles,
+    errors: [],
+    oldData: {}
   });
 };
 
-// const StoreUser = async (req, res) => {
-//   // const { empno, vname, passw, sex, dept_id, email, role_id } = req.body;
-// }
-// const StoreUser = async (req, res) => {
-//   try {
-//     await User.create(req.body);
-//     res.redirect('/users');
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send('Gagal menambahkan user.');
-//   }
-// };
+const StoreUser = async (req, res) => {
+    const departments = await Dept.findAll();
+    const roles = await Role.findAll();
 
-module.exports = { GetAllUser, CreateUser, EditUser, UpdateUser };
+    try {
+        const errors = validationResult(req);
+        errors.throw();
+
+        const { vname, account, email, storeh, sex, dept_id, role_id, passw } = req.body
+
+        const manuf = 'J'
+        const empno = account.slice(1, 6);
+        const code = "YYYYYYYY"
+        const image = "default.png"
+
+        const saltRounds = 12;
+        const hashedPassw = await bcrypt.hash(passw, saltRounds);        
+
+        await User.create({
+            manuf,
+            account,
+            empno,
+            vname,              
+            passw: hashedPassw,
+            sex,
+            dept_id,
+            email,
+            role_id,
+            storeh,
+            code,
+            image,
+          });
+
+        res.redirect('/users?status=success')
+    } catch (error) {
+      let errors = [];
+
+      if (error.errors) {
+        errors = error.errors
+      }
+      res.render('users/create', {
+        layout: 'layouts/template',
+        title: 'Add User',
+        departments,
+        roles,
+        errors,
+        oldData: req.body
+      });
+    }    
+}
+
+  const RemoveUser = async (req, res) => {
+    try {
+      const id = req.params.id;
+      const user = await User.findOne({ where: { id }});
+
+      if (!user) {
+        return res.status(404).render('errors/404', { layout: false });
+      }
+
+      await user.destroy();
+      res.redirect('/users?status=success');
+    } catch (error) {
+      res.status(500).render('errors/500', { layout: false });
+    }
+}
+module.exports = { GetAllUser, CreateUser, EditUser, UpdateUser, StoreUser, RemoveUser }

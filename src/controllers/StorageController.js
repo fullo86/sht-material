@@ -1,6 +1,7 @@
 const db = require('../models');
 const { Op } = require('sequelize');
 const Storage = db.Storage;
+const StorageLog = db.StorageLog;
 
 const GetAllStorage = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -43,6 +44,47 @@ const GetAllStorage = async (req, res) => {
     }
 };
 
+
+const GetAllStorageLog = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 50;
+  const offset = (page - 1) * limit;
+  const search = req.query.search || '';
+
+  // Search di kolom username, ip_address, atau activity
+  const whereCondition = search
+    ? {
+        [Op.or]: [
+          { Username: { [Op.like]: `%${search}%` } },
+          { IPAddress: { [Op.like]: `%${search}%` } },
+          { Activity: { [Op.like]: `%${search}%` } },
+        ],
+      }
+    : {};
+
+  try {
+    const { count, rows: logs } = await StorageLog.findAndCountAll({
+      where: whereCondition,
+      limit,
+      offset,
+      order: [['Timestamp', 'DESC']],
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    res.render('storage/log', {
+      title: 'Storage Activity Log',
+      logs,
+      currentPage: page,
+      totalPages,
+      search,
+    });
+  } catch (error) {
+    console.error('Error fetching storage logs:', error);
+    res.status(500).send('Internal server error.');
+  }
+};
+
 // Contoh createUser sederhana
 const createUser = async (req, res) => {
     const { item_name, vendor, style } = req.body;
@@ -59,20 +101,21 @@ const createUser = async (req, res) => {
 const pullHPSystem = async (req, res) => {
   try {
     const data = await db.sequelize.query(`
-      SELECT * FROM OPENQUERY([ondbs], '
-        SELECT
-          u04.storeh,
-          u04.sheft,
-          u36.typ AS kind,
-          u36.style,
-          u36.itncna,
-          u36.scolor,
-          u06.ex_unit AS unit,
-          u06.pqty AS qty,
-          u06.vendno,
-          '''' AS memo,
-          0 AS qty1,
-          current AS sdate
+      SELECT *
+      FROM OPENQUERY([ondbs], '
+        SELECT 
+            ''A01'' AS storeh,
+            '''' AS sheft,
+            ''JS'' AS kind,            
+            u36.typ AS style,
+            u36.itncna,
+            u36.scolor,
+            u06.ex_unit AS unit,
+            u06.pqty AS qty,
+            u06.vendno,
+            '''' AS memo,
+            0 AS qty1,
+            u06.cdrdat AS sdate
         FROM u04, u36, u06
         WHERE u04.kind = ''8''
           AND u06.manuf1 = ''J''
@@ -80,7 +123,6 @@ const pullHPSystem = async (req, res) => {
           AND u06.pgrpno = u04.pgrpno
           AND u06.purno = u36.purno
           AND u06.manuf1 = u04.manuf
-        ORDER BY u06.cdrdat DESC
       ')
     `, {
       type: db.Sequelize.QueryTypes.SELECT
@@ -105,13 +147,30 @@ const pullHPSystem = async (req, res) => {
       sdate: item.sdate
     }));
 
-    await Storage.bulkCreate(mappedData);
+    await Storage.bulkCreate(mappedData, {
+  validate: true,
+  returning: false
+});
+
+      // === Tambahkan pencatatan log aktivitas ===
+    const user = req.user?.username || 'Unknown'; // tergantung authentication
+    const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+    await db.StorageLog.create({
+      Username: user,
+      IPAddress: ipAddress,
+      Activity: 'Pull data from HPSystem'
+    });
 
     res.redirect('/storage');
   } catch (err) {
-    console.error("Gagal pull data HPSystem:", err);
+    console.error("Gagal pull data HPSystem:", err.original || err);
     res.status(500).send("Gagal tarik dan simpan data dari HPSystem.");
-  }
+  }
 };
 
-module.exports = { GetAllStorage, createUser, pullHPSystem };
+const getAllDetails = async (req, res) => {
+
+}
+
+module.exports = { GetAllStorage, createUser, pullHPSystem, GetAllStorageLog };

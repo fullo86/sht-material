@@ -6,10 +6,12 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true
     },
-    role_name: DataTypes.STRING
+    role_name: DataTypes.CHAR(15)
   }, {
     tableName: 'roles',
-    timestamps: false
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   });
 
   Role.associate = (models) => {
