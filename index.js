@@ -40,6 +40,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   const user = req.session.user;
 
+  res.locals.id = user ? user.id : null;
   res.locals.role_id = user ? user.role : null;
   res.locals.currentPath = req.path;
   next();

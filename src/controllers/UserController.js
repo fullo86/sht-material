@@ -1,5 +1,7 @@
+const { sequelize } = require('../models');
 const db = require('../models');
 const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 const User = db.User;
 const Dept = db.Dept;
@@ -40,34 +42,58 @@ const EditUser = async (req, res) => {
       departments
     });
   } catch (error) {
-    console.error(error);
     res.status(500).render('errors/500', { layout: false });
   }
 };
 
 const UpdateUser = async (req, res) => {
+    const transaction = await sequelize.transaction();
   try {
     const id = req.params.id;
-    const { account, empno, vname, email, dept_id, sex } = req.body;
-
-    const user = await User.findOne({ where: { id }});
+    const { account, vname, email, dept_id, sex } = req.body;
+    
+    const user = await User.findOne({ where: { id }, lock: transaction.LOCK.UPDATE, transaction});
     if (!user) {
       return res.status(404).render('errors/404', { layout: false });
     }
 
-    await user.update({
-      account,
-      empno,
-      vname,
-      email,
-      dept_id,
-      sex
-    });
+    let empno = user.empno
+    if (user.account != account) {
+        empno = account.slice(1, 6);
+    }
 
+    const result = await user.update({
+                  account,
+                  empno,
+                  vname,
+                  email,
+                  dept_id,
+                  sex
+                }, { transaction });
+
+    if (!result) {
+      await transaction.rollback();
+      return res.render('users/read', { 
+        layout: 'layouts/template', 
+        errors: [{ msg: 'Failed update user' }] 
+      });        
+    }
+
+    await transaction.commit();
     res.redirect('/users?status=success');
   } catch (error) {
-    console.error(error);
-    res.status(500).render('errors/500', { layout: false });
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
+
+      const departments = await Dept.findAll();
+      return res.render('users/edit', { 
+        layout: 'layouts/template', 
+        title: 'Edit User',
+        errors: [{ msg: error }],
+        user: req.body,
+        departments
+      });
   }
 };
 
@@ -88,6 +114,7 @@ const CreateUser = async (req, res) => {
 const StoreUser = async (req, res) => {
     const departments = await Dept.findAll();
     const roles = await Role.findAll();
+    const transaction = await sequelize.transaction();
 
     try {
         const errors = validationResult(req);
@@ -103,28 +130,43 @@ const StoreUser = async (req, res) => {
         const saltRounds = 12;
         const hashedPassw = await bcrypt.hash(passw, saltRounds);        
 
-        await User.create({
-            manuf,
-            account,
-            empno,
-            vname,              
-            passw: hashedPassw,
-            sex,
-            dept_id,
-            email,
-            role_id,
-            storeh,
-            code,
-            image,
-          });
+        const result = await User.create({
+                      id: uuidv4(),
+                      manuf,
+                      account,
+                      empno,
+                      vname,              
+                      passw: hashedPassw,
+                      sex,
+                      dept_id,
+                      email,
+                      role_id,
+                      storeh,
+                      code,
+                      image,
+                    }, { transaction });
 
+        if (!result) {
+          await transaction.rollback();
+          return res.render('users/create', { 
+            layout: 'layouts/template', 
+            errors: [{ msg: 'Failed create user' }] 
+          });            
+        }
+
+        await transaction.commit();
         res.redirect('/users?status=success')
     } catch (error) {
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
+
       let errors = [];
 
       if (error.errors) {
         errors = error.errors
       }
+
       res.render('users/create', {
         layout: 'layouts/template',
         title: 'Add User',
@@ -137,18 +179,106 @@ const StoreUser = async (req, res) => {
 }
 
   const RemoveUser = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
       const id = req.params.id;
-      const user = await User.findOne({ where: { id }});
+      const user = await User.findOne({ where: { id }, lock: transaction.LOCK.UPDATE, transaction });
 
       if (!user) {
         return res.status(404).render('errors/404', { layout: false });
       }
 
-      await user.destroy();
+      const result = await user.destroy({ transaction });
+
+      if (!result) {
+        await transaction.rollback();
+        return res.render('users/read', { 
+          layout: 'layouts/template', 
+          errors: [{ msg: 'Failed delete user' }] 
+        });        
+      }
+
+      await transaction.commit();
       res.redirect('/users?status=success');
     } catch (error) {
-      res.status(500).render('errors/500', { layout: false });
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
+
+      return res.render('users/read', { 
+        layout: 'layouts/template', 
+        errors: [{ msg: error }] 
+      });
     }
 }
-module.exports = { GetAllUser, CreateUser, EditUser, UpdateUser, StoreUser, RemoveUser }
+
+const EditByUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findOne({
+      where: { id},
+      include: [{ model: Dept, as: 'dept', attributes: ['dept_code', 'dept_desc'] }]
+    });
+
+    if (!user) {
+      return res.status(404).render('errors/404', { layout: false });
+    }
+
+    res.render('users/account', {
+      layout: 'layouts/template',
+      title: 'Edit User',
+      user
+    });
+  } catch (error) {
+    res.status(500).render('errors/500', { layout: false });
+  }
+};
+
+const UpdateByUser = async (req, res) => {
+    const transaction = await sequelize.transaction();
+  try {
+    const id = req.params.id;
+    const { vname, email } = req.body;
+    
+    const user = await User.findOne({ where: { id }, lock: transaction.LOCK.UPDATE, transaction});
+    if (!user) {
+      return res.status(404).render('errors/404', { layout: false });
+    }
+
+    const result = await user.update({
+                  vname,
+                  email,
+                }, { transaction });
+
+    if (!result) {
+      await transaction.rollback();
+      return res.render('users/account', { 
+        layout: 'layouts/template', 
+        errors: [{ msg: 'Failed update user' }] 
+      });        
+    }
+
+    await transaction.commit();
+    return res.render('users/account', { 
+            layout: 'layouts/template', 
+            title: 'Edit User',
+            success: 'User updated successfully!',
+            user: { id, vname, email }, 
+        });   
+  } catch (error) {
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
+
+      const departments = await Dept.findAll();
+      return res.render('users/account', { 
+        layout: 'layouts/template', 
+        title: 'Edit User',
+        errors: [{ msg: error }],
+        user: req.body,
+        departments
+      });
+  }
+};
+
+module.exports = { GetAllUser, CreateUser, EditUser, UpdateUser, UpdateByUser, StoreUser, RemoveUser, EditByUser }

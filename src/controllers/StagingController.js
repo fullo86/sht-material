@@ -4,8 +4,6 @@ const { Op } = require('sequelize');
 const Staging = db.Staging;
 const StgLog = db.StgLog
 const { v4: uuidv4 } = require('uuid');
-const getLocalIP = require('../helper/GetIP')
-const dayjs = require('dayjs');
 const ActivityLog = require('../helper/ActivityLog');
 
 const GetAllStaging = async (req, res) => {
@@ -187,6 +185,60 @@ const GetLogsByStagingId = async (req, res) => {
   }
 };
 
+const GetStagingDetail = async (req, res) => {
+  const stagingId = req.params.id;  // Ambil staging_id dari URL parameter
+
+  try {
+    // Ambil qty IN terbesar
+    const maxInQty = await StgLog.max('iqty', {
+      where: {
+        staging_id: stagingId,
+        kind: 'I',
+      },
+    });
+
+    // Ambil qty OUT terbesar
+    const maxOutQty = await StgLog.max('oqty', {
+      where: {
+        staging_id: stagingId,
+        kind: 'O',
+      },
+    });
+
+    // Tentukan qty terbanyak untuk IN dan OUT
+    const maxInDate = await StgLog.findOne({
+      where: {
+        staging_id: stagingId,
+        kind: 'I',
+        iqty: maxInQty,
+      },
+      attributes: ['created_at'],  // Ambil tanggal dari log IN terbesar
+    });
+
+    const maxOutDate = await StgLog.findOne({
+      where: {
+        staging_id: stagingId,
+        kind: 'O',
+        oqty: maxOutQty,
+      },
+      attributes: ['created_at'],  // Ambil tanggal dari log OUT terbesar
+    });
+
+    // Kirim data ke frontend
+    res.json({
+      maxInQty: maxInQty || 0,
+      maxOutQty: maxOutQty || 0,
+      maxInDate: maxInDate ? maxInDate.created_at : 'N/A',  // Tanggal qty IN terbesar
+      maxOutDate: maxOutDate ? maxOutDate.created_at : 'N/A', // Tanggal qty OUT terbesar
+      stagingId: stagingId,
+    });
+
+  } catch (error) {
+    console.error('Error fetching top qty:', error);
+    res.status(500).send("Internal server error.");
+  }
+};
+
 const stockInQty = async (req, res) => {
   const transact = await sequelize.transaction();
   try {
@@ -355,4 +407,4 @@ const stockOutQty = async (req, res) => {
   }
 };
 
-module.exports = { GetAllStaging, pullHPSystem, GetLogsByStagingId, stockOutQty, stockInQty };
+module.exports = { GetAllStaging, pullHPSystem, GetLogsByStagingId, GetStagingDetail, stockOutQty, stockInQty };

@@ -75,7 +75,18 @@
                     class="badge bg-warning text-dark text-decoration-none p-2 w-100 text-center m-1"
                     data-bs-toggle="modal" 
                     data-bs-target="#detailModal"
-                    data-id="<%= item.id %>">Detail</a>
+                    data-id="<%= item.id %>"
+                    data-pgrpno="<%= item.pgrpno %>"
+                    data-purno="<%= item.purno %>"
+                    data-storeh="<%= item.storeh %>"
+                    data-sheft="<%= item.sheft %>"
+                    data-typ="<%= item.typ %>"
+                    data-vendno="<%= item.vendno %>"
+                    data-style="<%= item.style %>"
+                    data-itncna="<%= item.itncna %>"
+                    data-scolor="<%= item.scolor %>"
+                    data-unit="<%= item.unit %>"
+                    >Detail</a>
                   <a href="#" 
                     class="badge bg-secondary text-dark text-decoration-none p-2 w-100 text-center m-1 logs-btn"
                     data-bs-toggle="modal" 
@@ -140,36 +151,75 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Detail Stok</h5>
+            <h5 class="modal-title">Detail</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <!-- Tabel stok -->
-            <table class="table table-bordered table-striped">
+              <input type="hidden" class="form-control" id="id" name="id">              
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <label for="pgrpno" class="form-label">Pgrpno</label>
+                  <input type="text" class="form-control" id="pgrpno" name="pgrpno" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="purno" class="form-label">Purchase No</label>
+                  <input type="text" class="form-control" id="purno" name="purno" readonly>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <label for="storeh" class="form-label">Storeh</label>
+                  <input type="text" class="form-control" id="storeh" name="storeh" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="sheft" class="form-label">Sheft</label>
+                  <input type="text" class="form-control" id="sheft" name="sheft" readonly>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <label for="typ" class="form-label">Type</label>
+                  <input type="text" class="form-control" id="typ" name="typ" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="vendno" class="form-label">Vendor</label>
+                  <input type="text" class="form-control" id="vendno" name="vendno" readonly>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <label for="style" class="form-label">Style</label>
+                  <input type="text" class="form-control" id="style" name="style" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="itncna" class="form-label">Style Desc</label>
+                  <input type="text" class="form-control" id="itncna" name="itncna" readonly>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <label for="scolor" class="form-label">Size Color</label>
+                  <input type="text" class="form-control" id="scolor" name="scolor" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="unit" class="form-label">Unit</label>
+                  <input type="text" class="form-control" id="unit" name="unit" readonly>
+                </div>
+              </div>
+
+            <hr>
+            <table class="table table-bordered table-striped mt-3">
+              <h5>Top I/O Qty</h5>
               <thead class="table-light">
                 <tr>
                   <th>No</th>
-                  <th>Tanggal</th>
-                  <th>Jenis</th>
-                  <th>Jumlah</th>
-                  <th>Catatan</th>
+                  <th>Date</th>
+                  <th>Storeh</th>
+                  <th>Kind</th>
+                  <th>Qty</th>
                 </tr>
               </thead>
               <tbody id="detailTableBody">
-                <tr>
-                  <td>1</td>
-                  <td>2025-07-27</td>
-                  <td>Masuk</td>
-                  <td>50</td>
-                  <td>Restock</td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>2025-07-26</td>
-                  <td>Keluar</td>
-                  <td>20</td>
-                  <td>Penjualan</td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -357,9 +407,70 @@
   });
 </script>
 
+
+<script>
+  let detailModal = document.getElementById('detailModal');
+
+  detailModal.addEventListener('show.bs.modal', function (event) {
+    let button = event.relatedTarget;
+
+    let id = button.getAttribute('data-id');
+    let pgrpno = button.getAttribute('data-pgrpno');
+    let purno = button.getAttribute('data-purno');
+    let storeh = button.getAttribute('data-storeh');
+    let sheft = button.getAttribute('data-sheft');
+    let typ = button.getAttribute('data-typ');
+    let vendno = button.getAttribute('data-vendno');
+    let style = button.getAttribute('data-style');
+    let itncna = button.getAttribute('data-itncna');
+    let scolor = button.getAttribute('data-scolor');
+    let unit = button.getAttribute('data-unit');
+
+    this.querySelector('#id').value = id;
+    this.querySelector('#pgrpno').value = pgrpno;
+    this.querySelector('#purno').value = purno;
+    this.querySelector('#storeh').value = storeh;
+    this.querySelector('#sheft').value = sheft;
+    this.querySelector('#typ').value = typ;
+    this.querySelector('#vendno').value = vendno;
+    this.querySelector('#style').value = style;
+    this.querySelector('#itncna').value = itncna;
+    this.querySelector('#scolor').value = scolor;
+    this.querySelector('#unit').value = unit;
+
+    fetch(`/api/staging/detail/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        const tableBody = document.getElementById('detailTableBody');
+
+        tableBody.innerHTML = ''; 
+        const rowIn = document.createElement('tr');
+        rowIn.innerHTML = `
+          <td>1</td>
+          <td>${new Date(data.maxInDate).toLocaleDateString()}</td>
+          <td>Masuk</td>
+          <td>IN</td>
+          <td>${data.maxInQty}</td>
+        `;
+        tableBody.appendChild(rowIn);
+
+        const rowOut = document.createElement('tr');
+        rowOut.innerHTML = `
+          <td>2</td>
+          <td>${new Date(data.maxOutDate).toLocaleDateString()}</td>
+          <td>Keluar</td>
+          <td>OUT</td>
+          <td>${data.maxOutQty}</td>
+        `;
+        tableBody.appendChild(rowOut);
+      })
+      .catch(error => console.error('Error fetching data:', error));
+  });
+</script>
+
 <script>
   $(function() {
-    var Toast = Swal.mixin({
+    let Toast = Swal.mixin({
       toast: true,
       position: 'top-end',
       showConfirmButton: false,

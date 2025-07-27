@@ -2,9 +2,10 @@
 module.exports = (sequelize, DataTypes) => {
   const Dept = sequelize.define('Dept', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.CHAR(36),
       primaryKey: true,
-      autoIncrement: true
+      allowNull: false,
+      autoIncrement: false
     },
     dept_code: DataTypes.CHAR(3),
     dept_desc: DataTypes.STRING(20),

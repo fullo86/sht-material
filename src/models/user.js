@@ -1,10 +1,12 @@
 'use strict';
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.CHAR(36),
       primaryKey: true,
-      autoIncrement: true
+      allowNull: false,
+      autoIncrement: false
     },
     manuf: DataTypes.CHAR(1),
     account: DataTypes.CHAR(6),
@@ -17,12 +19,14 @@ module.exports = (sequelize, DataTypes) => {
     role_id: DataTypes.INTEGER,
     storeh: DataTypes.CHAR(2),
     code: DataTypes.CHAR(30),
-    image: DataTypes.STRING
+    image: DataTypes.STRING,
   }, {
+    paranoid: true,
     tableName: 'users',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    deletedAt: 'deleted_at'
   });
 
   User.associate = (models) => {
