@@ -26,7 +26,17 @@
   <div class="card">
     <div class="card-body login-card-body">
       <p class="login-box-msg">Sign in to start your session</p>
-
+        <% if (typeof errors != 'undefined' && errors.length > 0 ) { %>
+          <div class="py-2">
+            <div class="alert alert-danger alert-dismissible">
+              <ul class="mb-0">
+                <% errors.forEach(err => { %>
+                  <li><%= err.msg %></li>
+                <% }) %>
+              </ul>
+            </div>        
+          </div>
+         <% } %>
       <form action="/login/auth" method="post">
         <div class="input-group mb-3">
           <input type="text" class="form-control" name="account" placeholder="Username">

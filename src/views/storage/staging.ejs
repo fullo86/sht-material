@@ -1,0 +1,382 @@
+<section class="content">
+  <div class="container-fluid mt-4">
+    <!-- Header dan Tombol Pull -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="mb-0">Staging Data</h1>
+      <a href="/storage/pull-hpsystem" class="btn btn-success">
+        🔄 Pull Data HPSystem
+      </a>
+    </div>
+
+    <!-- Form Pencarian -->
+    <form method="GET" class="mb-3">
+      <div class="row align-items-center">
+        <div class="col-md-4 mb-2">
+          <input
+            type="text"
+            name="search"
+            value="<%= typeof search !== 'undefined' ? search : '' %>"
+            class="form-control"
+            placeholder="Search Item Name / Kind / Style..."
+          />
+        </div>
+        <div class="col-auto mb-2">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+        <div class="col-auto mb-2">
+          <a href="?" class="btn btn-secondary">Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Tabel Data -->
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Purchase No</th>
+          <th>Style</th>
+          <th>Item Name</th>
+          <th>Stock Qty</th>
+          <th>In Qty</th>
+          <th>Out Qty</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (stages.length === 0) { %>
+          <tr>
+            <td colspan="13" style="text-align: center;">No data found</td>
+          </tr>
+        <% } else { %>
+        <% stages.forEach((item, i) => { %>
+          <tr>
+            <td><%= (currentPage - 1) * 100 + i + 1 %></td>
+            <td><%= item.purno %></td>
+            <td><%= item.style %></td>
+            <td><%= item.itncna %></td>
+            <td><%= item.sqty %></td>
+            <td><%= item.totalIqty  %></td>
+            <td><%= item.totalOqty  %></td>
+            <td>
+              <div class="d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between gap-1">
+                  <a href="#" class="badge bg-primary text-decoration-none p-2 w-100 text-center m-1"
+                    data-bs-toggle="modal"
+                    data-bs-target="#qty2Modal"
+                    data-id="<%= item.id %>">Qty in</a>
+                  <a href="#" class="badge bg-primary text-decoration-none p-2 w-100 text-center m-1"
+                    data-bs-toggle="modal"
+                    data-bs-target="#oqtyModal"
+                    data-id="<%= item.id %>">Qty out</a>
+                </div>
+                <div class="d-flex justify-content-between gap-1">
+                  <a href="#" 
+                    class="badge bg-warning text-dark text-decoration-none p-2 w-100 text-center m-1"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#detailModal"
+                    data-id="<%= item.id %>">Detail</a>
+                  <a href="#" 
+                    class="badge bg-secondary text-dark text-decoration-none p-2 w-100 text-center m-1 logs-btn"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#logModal"
+                    data-id="<%= item.id %>">Log Qty</a>
+                </div>
+              </div>
+            </td>
+          </tr>
+         <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+
+    <!-- Out Qty Modal -->
+    <div class="modal fade" id="oqtyModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form id="oqtyForm" method="POST">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Stock Out Qty</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="modaloqtyId" name="id" />
+              <input type="number" class="form-control" name="oqty" value="0" required />
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- In Qty Modal-->
+    <div class="modal fade" id="qty2Modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form id="qty2Form" method="POST">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Stock In Qty</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="modalQty2Id" name="id" />
+              <input type="number" class="form-control" name="iqty" value="0" required />
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Detail Qty -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Detail Stok</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Tabel stok -->
+            <table class="table table-bordered table-striped">
+              <thead class="table-light">
+                <tr>
+                  <th>No</th>
+                  <th>Tanggal</th>
+                  <th>Jenis</th>
+                  <th>Jumlah</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody id="detailTableBody">
+                <tr>
+                  <td>1</td>
+                  <td>2025-07-27</td>
+                  <td>Masuk</td>
+                  <td>50</td>
+                  <td>Restock</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>2025-07-26</td>
+                  <td>Keluar</td>
+                  <td>20</td>
+                  <td>Penjualan</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log Qty -->
+    <div class="modal fade" id="logModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Stok Detail</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered table-striped">
+              <thead class="table-light">
+                <tr>
+                  <th>No</th>
+                  <th>Date</th>
+                  <th>Storeh</th>
+                  <th>Kind</th>
+                  <th>Qty</th>
+                  <th>Remark</th>
+                </tr>
+              </thead>
+              <tbody id="logTableBody">
+                <tr><td colspan="5" class="text-center">Loading data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="mt-3">
+      <ul class="pagination justify-content-center">
+
+        <% if (currentPage > 1) { %>
+          <li class="page-item">
+            <a class="page-link" href="?page=<%= currentPage - 1 %>">« Prev</a>
+          </li>
+        <% } else { %>
+          <li class="page-item disabled">
+            <span class="page-link">« Prev</span>
+          </li>
+        <% } %>
+
+        <% 
+          const pageLimit = 5;
+          let startPage = Math.max(currentPage - Math.floor(pageLimit / 2), 1);
+          let endPage = startPage + pageLimit - 1;
+          if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = Math.max(endPage - pageLimit + 1, 1);
+          }
+        %>
+
+        <% if (startPage > 1) { %>
+          <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+          <% if (startPage > 2) { %>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          <% } %>
+        <% } %>
+
+        <% for (let i = startPage; i <= endPage; i++) { %>
+          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+          </li>
+        <% } %>
+
+        <% if (endPage < totalPages) { %>
+          <% if (endPage < totalPages - 1) { %>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          <% } %>
+          <li class="page-item">
+            <a class="page-link" href="?page=<%= totalPages %>"><%= totalPages %></a>
+          </li>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+          <li class="page-item">
+            <a class="page-link" href="?page=<%= currentPage + 1 %>">Next »</a>
+          </li>
+        <% } else { %>
+          <li class="page-item disabled">
+            <span class="page-link">Next »</span>
+          </li>
+        <% } %>
+      </ul>
+    </nav>
+  </div>
+</section>
+
+<!--Stock out modal -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('oqtyModal');
+    const form = document.getElementById('oqtyForm');
+    const hiddenIdInput = document.getElementById('modaloqtyId');
+
+    document.querySelectorAll('[data-bs-target="#oqtyModal"]').forEach(button => {
+      button.addEventListener('click', function () {
+        const id = this.getAttribute('data-id');
+
+        hiddenIdInput.value = id;
+
+        form.action = `/storage/stock-out/${id}?_method=PATCH`;
+      });
+    });
+  });
+</script>
+
+<!--Stock in modal -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('qty2Modal');
+    const form = document.getElementById('qty2Form');
+    const hiddenIdInput = document.getElementById('modalQty2Id');
+
+    document.querySelectorAll('[data-bs-target="#qty2Modal"]').forEach(button => {
+      button.addEventListener('click', function () {
+        const id = this.getAttribute('data-id');
+
+        hiddenIdInput.value = id;
+
+        form.action = `/storage/stock-in/${id}?_method=PATCH`;
+      });
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const detailButtons = document.querySelectorAll(".logs-btn");
+    const tableBody = document.getElementById("logTableBody");
+
+    detailButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        const stagingId = button.getAttribute("data-id");
+
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center">Loading data...</td></tr>`;
+
+        fetch(`/api/stglog?staging_id=${stagingId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.length === 0) {
+              tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Data not found</td></tr>`;
+              return;
+            }
+
+            let html = "";
+            data.forEach((log, i) => {
+                const detailQty = log.kind === 'I'
+                  ? `<span class="text-success">In ${log.iqty} Qty</span>`
+                  : `<span class="text-muted">Out ${log.oqty} Qty</span>`;
+
+              html += `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${new Date(log.created_at).toLocaleDateString()}</td>
+                  <td>${log.storeh || '-'}</td>
+                  <td>${log.kind || '-'}</td>
+                  <td>${log.iqty || log.oqty || '-'}</td>
+                  <td>${detailQty}</td>
+                </tr>`;
+            });
+
+            tableBody.innerHTML = html;
+          })
+          .catch(err => {
+            console.error(err);
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Failed fetch data</td></tr>`;
+          });
+      });
+    });
+  });
+</script>
+
+<script>
+  $(function() {
+    var Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000
+    });
+
+    $('.toastrDefaultSuccess').click(function() {
+      toastr.success('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
+    });
+    $('.toastrDefaultInfo').click(function() {
+      toastr.info('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
+    });
+    $('.toastrDefaultError').click(function() {
+      toastr.error('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
+    });
+    $('.toastrDefaultWarning').click(function() {
+      toastr.warning('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
+    });
+  });
+</script>

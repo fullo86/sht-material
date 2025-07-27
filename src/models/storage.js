@@ -1,10 +1,11 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Storage = sequelize.define('Storage', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
+ id: {
+    type: DataTypes.CHAR(36),
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: false
     },
     storeh: DataTypes.STRING,
     sheft: DataTypes.STRING,

@@ -5,28 +5,29 @@ const User = db.User;
 const login = async (req, res) => {
   const { account, passw } = req.body;
 
-  try {
+  try {    
     const user = await User.findOne({ where: { account } });
     if (!user) {
-      return res.render('auth/login', { layout: false, error: 'Account not found' });
+      return res.render('auth/login', { layout: false, errors: [{msg: 'Account not found'}] });
     }
 
     const isMatch = await bcrypt.compare(passw, user.passw);
     if (!isMatch) {
-      return res.render('auth/login', { layout: false, error: 'Incorrect Password' });
+      return res.render('auth/login', { layout: false, errors: [{ msg: 'Incorrect Password' }] });
     }
 
-    // Simpan data user di session
     req.session.user = {
       id: user.id,
+      account: user.account,
       vname: user.vname,
       role: user.role_id
     };
-
     return res.redirect('/dashboard');
-  } catch (err) {
-    console.error('Login error:', err);
-    return res.status(500).render('auth/login', { layout: false, error: 'Terjadi kesalahan server' });
+  } catch (error) {
+      res.render('auth/login', {
+        layout: false,
+        errors: [{msg: error}]
+      });    
   }
 };
 

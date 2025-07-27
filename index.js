@@ -5,6 +5,7 @@ const path = require('path');
 const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
+const flash = require('connect-flash');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const allRoutes = require('./src/routes/index.js');
@@ -20,6 +21,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000,
   }
 }));
+app.use(flash());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(methodOverride('_method'));
@@ -30,6 +32,15 @@ app.set('layout', 'layouts/template');
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  next();
+});
+
+app.use((req, res, next) => {
+  const user = req.session.user;
+
+  res.locals.role_id = user ? user.role : null;
   res.locals.currentPath = req.path;
   next();
 });
