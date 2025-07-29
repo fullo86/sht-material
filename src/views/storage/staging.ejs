@@ -1,6 +1,5 @@
 <section class="content">
   <div class="container-fluid mt-4">
-    <!-- Header dan Tombol Pull -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h1 class="mb-0">Staging Data</h1>
       <a href="/storage/pull-hpsystem" class="btn btn-success">
@@ -8,7 +7,6 @@
       </a>
     </div>
 
-    <!-- Form Pencarian -->
     <form method="GET" class="mb-3">
       <div class="row align-items-center">
         <div class="col-md-4 mb-2">
@@ -29,7 +27,6 @@
       </div>
     </form>
 
-    <!-- Tabel Data -->
     <table class="table table-bordered table-striped">
       <thead>
         <tr>
@@ -415,58 +412,87 @@
     let button = event.relatedTarget;
 
     let id = button.getAttribute('data-id');
-    let pgrpno = button.getAttribute('data-pgrpno');
-    let purno = button.getAttribute('data-purno');
-    let storeh = button.getAttribute('data-storeh');
-    let sheft = button.getAttribute('data-sheft');
-    let typ = button.getAttribute('data-typ');
-    let vendno = button.getAttribute('data-vendno');
-    let style = button.getAttribute('data-style');
-    let itncna = button.getAttribute('data-itncna');
-    let scolor = button.getAttribute('data-scolor');
-    let unit = button.getAttribute('data-unit');
-
+    if (!id) {
+      console.warn("ID not found!.");
+      return;
+    }
+console.log(id, 'ini id modal')
     this.querySelector('#id').value = id;
-    this.querySelector('#pgrpno').value = pgrpno;
-    this.querySelector('#purno').value = purno;
-    this.querySelector('#storeh').value = storeh;
-    this.querySelector('#sheft').value = sheft;
-    this.querySelector('#typ').value = typ;
-    this.querySelector('#vendno').value = vendno;
-    this.querySelector('#style').value = style;
-    this.querySelector('#itncna').value = itncna;
-    this.querySelector('#scolor').value = scolor;
-    this.querySelector('#unit').value = unit;
+    this.querySelector('#pgrpno').value = button.getAttribute('data-pgrpno') || '';
+    this.querySelector('#purno').value = button.getAttribute('data-purno') || '';
+    this.querySelector('#storeh').value = button.getAttribute('data-storeh') || '';
+    this.querySelector('#sheft').value = button.getAttribute('data-sheft') || '';
+    this.querySelector('#typ').value = button.getAttribute('data-typ') || '';
+    this.querySelector('#vendno').value = button.getAttribute('data-vendno') || '';
+    this.querySelector('#style').value = button.getAttribute('data-style') || '';
+    this.querySelector('#itncna').value = button.getAttribute('data-itncna') || '';
+    this.querySelector('#scolor').value = button.getAttribute('data-scolor') || '';
+    this.querySelector('#unit').value = button.getAttribute('data-unit') || '';
 
+    console.log("Fetching detail for ID:", id);
     fetch(`/api/staging/detail/${id}`)
       .then(res => res.json())
       .then(data => {
         const tableBody = document.getElementById('detailTableBody');
-
         tableBody.innerHTML = ''; 
-        const rowIn = document.createElement('tr');
-        rowIn.innerHTML = `
-          <td>1</td>
-          <td>${new Date(data.maxInDate).toLocaleDateString()}</td>
-          <td>Masuk</td>
-          <td>IN</td>
-          <td>${data.maxInQty}</td>
-        `;
-        tableBody.appendChild(rowIn);
 
-        const rowOut = document.createElement('tr');
-        rowOut.innerHTML = `
-          <td>2</td>
-          <td>${new Date(data.maxOutDate).toLocaleDateString()}</td>
-          <td>Keluar</td>
-          <td>OUT</td>
-          <td>${data.maxOutQty}</td>
-        `;
-        tableBody.appendChild(rowOut);
+        if (data.maxInQty && data.maxInDate) {
+          const rowIn = document.createElement('tr');
+          rowIn.innerHTML = `
+            <td>1</td>
+            <td>${new Date(data.maxInDate).toLocaleDateString()}</td>
+            <td>${data.storehIn || '-'}</td>
+            <td>IN</td>
+            <td>${data.maxInQty}</td>
+          `;
+          tableBody.appendChild(rowIn);
+        }else{
+          const rowIn = document.createElement('tr');
+          rowIn.innerHTML = `
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          `;
+          tableBody.appendChild(rowIn);
+        }
+
+        if (data.maxOutQty && data.maxOutDate) {
+          const rowOut = document.createElement('tr');
+          rowOut.innerHTML = `
+            <td>2</td>
+            <td>${new Date(data.maxOutDate).toLocaleDateString()}</td>
+            <td>${data.storehOut || '-'}</td>
+            <td>OUT</td>
+            <td>${data.maxOutQty}</td>
+          `;
+          tableBody.appendChild(rowOut);
+        }else{
+          const rowOut = document.createElement('tr');
+          rowOut.innerHTML = `
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          `;
+          tableBody.appendChild(rowOut);
+        }
+
+        if (!data.maxInQty && !data.maxOutQty) {
+          tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No data found!</td></tr>`;
+        }
+
       })
-      .catch(error => console.error('Error fetching data:', error));
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        document.getElementById('detailTableBody').innerHTML =
+          `<tr><td colspan="5" class="text-center text-danger">Failed to fetch!</td></tr>`;
+      });
   });
 </script>
+
 
 <script>
   $(function() {

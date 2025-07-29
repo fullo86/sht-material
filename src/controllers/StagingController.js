@@ -169,7 +169,7 @@ const GetLogsByStagingId = async (req, res) => {
   const stagingId = req.query.staging_id;
 
   if (!stagingId) {
-    return res.status(400).json({ error: "Parameter staging_id wajib diisi" });
+    return res.status(400).json({ error: "Staging_id not found" });
   }
 
   try {
@@ -181,15 +181,14 @@ const GetLogsByStagingId = async (req, res) => {
     res.json(logs);
   } catch (error) {
     console.error('Error fetching stgLog:', error);
-    res.status(500).json({ error: 'Terjadi kesalahan server' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 const GetStagingDetail = async (req, res) => {
-  const stagingId = req.params.id;  // Ambil staging_id dari URL parameter
+  const stagingId = req.params.id;  
 
   try {
-    // Ambil qty IN terbesar
     const maxInQty = await StgLog.max('iqty', {
       where: {
         staging_id: stagingId,
@@ -197,7 +196,6 @@ const GetStagingDetail = async (req, res) => {
       },
     });
 
-    // Ambil qty OUT terbesar
     const maxOutQty = await StgLog.max('oqty', {
       where: {
         staging_id: stagingId,
@@ -205,14 +203,13 @@ const GetStagingDetail = async (req, res) => {
       },
     });
 
-    // Tentukan qty terbanyak untuk IN dan OUT
     const maxInDate = await StgLog.findOne({
       where: {
         staging_id: stagingId,
         kind: 'I',
         iqty: maxInQty,
       },
-      attributes: ['created_at'],  // Ambil tanggal dari log IN terbesar
+      attributes: ['created_at', 'storeh'], 
     });
 
     const maxOutDate = await StgLog.findOne({
@@ -221,15 +218,15 @@ const GetStagingDetail = async (req, res) => {
         kind: 'O',
         oqty: maxOutQty,
       },
-      attributes: ['created_at'],  // Ambil tanggal dari log OUT terbesar
+      attributes: ['created_at', 'storeh'], 
     });
-
-    // Kirim data ke frontend
     res.json({
       maxInQty: maxInQty || 0,
       maxOutQty: maxOutQty || 0,
-      maxInDate: maxInDate ? maxInDate.created_at : 'N/A',  // Tanggal qty IN terbesar
-      maxOutDate: maxOutDate ? maxOutDate.created_at : 'N/A', // Tanggal qty OUT terbesar
+      storehIn: maxInDate ? maxInDate.storeh : 'N/A',
+      storehOut: maxOutDate ? maxOutDate.storeh: 'N/A',
+      maxInDate: maxInDate ? maxInDate.created_at : 'N/A', 
+      maxOutDate: maxOutDate ? maxOutDate.created_at : 'N/A',
       stagingId: stagingId,
     });
 
@@ -240,7 +237,7 @@ const GetStagingDetail = async (req, res) => {
 };
 
 const stockInQty = async (req, res) => {
-  const transact = await sequelize.transaction();
+  const transaction = await sequelize.transaction();
   try {
     const { id, iqty } = req.body;
 
@@ -257,8 +254,8 @@ const stockInQty = async (req, res) => {
 
     const record = await Staging.findOne({
       where: { id },
-      transaction: transact,
-      lock: transact.LOCK.UPDATE
+      transaction,
+      lock: transaction.LOCK.UPDATE
     });
 
     if (!record) {
@@ -276,32 +273,32 @@ const stockInQty = async (req, res) => {
       sqty: newQty,
       iqty: inQty,
       oqty: record.outQty
-    }, { transaction: transact });
+    }, { transaction });
 
     if (!resOqty) {
-      await transact.rollback();
+      await transaction.rollback();
       req.flash('error_msg', 'Failed to create the data');
       return res.redirect('/staging');
     }
 
     const total = await StgLog.sum('iqty', {
       where: { staging_id: id },
-      transaction: transact
+      transaction
     });
     const totalOqty = parseFloat(total || 0);
 
     const result = await record.update({
       sqty: newQty,
       iqty: totalOqty
-    }, { transaction: transact });
+    }, { transaction });
 
     if (!result) {
-      await transact.rollback();
+      await transaction.rollback();
       req.flash('error_msg', 'Failed update storage stock');
       return res.redirect('/staging');
     }
 
-    await transact.commit();
+    await transaction.commit();
 
     const empno = req.session?.user?.account || 'Unknown';
     const username = req.session?.user?.vname || 'Unknown';
@@ -315,14 +312,16 @@ const stockInQty = async (req, res) => {
     req.flash('success_msg', `Stock-In ${inQty} success!`);
     return res.redirect('/staging');
   } catch (error) {
-    await transact.rollback();
-    console.error("Error stockInQty:", error);
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
+
     return res.status(500).json({ message: "Interal server error" });
   }
 };
 
 const stockOutQty = async (req, res) => {
-  const transact = await sequelize.transaction();
+  const transaction = await sequelize.transaction();
   try {
     const { id, oqty } = req.body;
 
@@ -339,8 +338,8 @@ const stockOutQty = async (req, res) => {
 
     const record = await Staging.findOne({
       where: { id },
-      transaction: transact,
-      lock: transact.LOCK.UPDATE
+      transaction,
+      lock: transaction.LOCK.UPDATE
     });
 
     if (!record) {
@@ -362,32 +361,32 @@ const stockOutQty = async (req, res) => {
       sqty: newQty,
       iqty: record.inQty,
       oqty: outQty
-    }, { transaction: transact });
+    }, { transaction });
 
     if (!resOqty) {
-      await transact.rollback();
+      await transaction.rollback();
       req.flash('error_msg', 'Failed to create the data');
       return res.redirect('/staging');
     }
 
     const total = await StgLog.sum('oqty', {
       where: { staging_id: id },
-      transaction: transact
+      transaction
     });
     const totalOqty = parseFloat(total || 0);
 
     const result = await record.update({
       sqty: newQty,
       oqty: totalOqty
-    }, { transaction: transact });
+    }, { transaction });
 
     if (!result) {
-      await transact.rollback();
+      await transaction.rollback();
       req.flash('error_msg', 'Failed update storage data');
       return res.redirect('/staging');
     }
 
-    await transact.commit();
+    await transaction.commit();
 
     const empno = req.session?.user?.account || 'Unknown';
     const username = req.session?.user?.vname || 'Unknown';
@@ -401,7 +400,7 @@ const stockOutQty = async (req, res) => {
     req.flash('success_msg', `Stock-Out ${outQty} success`);
     return res.redirect('/staging');
   } catch (error) {
-    await transact.rollback();
+    await transaction.rollback();
     console.error("Error stockOutQty:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
