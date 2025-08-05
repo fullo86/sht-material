@@ -1,0 +1,81 @@
+<section class="content">
+  <div class="row py-3">
+    <div class="col-md-12">
+      <div class="card card-secondary">
+        <div class="card-header">
+          <h3 class="card-title">EDIT USER</h3>
+        </div>
+        <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              <% errors.forEach(error => { %>
+                <li><%= error.msg %></li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+        <form action="/users/update/<%= user.id %>?_method=PATCH" method="POST">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="vname">Name</label>
+            <input type="text" id="vname" name="vname" class="form-control" value="<%= user.vname %>" placeholder="Full Name..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control" value="<%= user.email %>" placeholder="Email..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="inputDept">Department</label>
+            <select id="inputDept" name="dept_id" class="form-control custom-select">
+              <option disabled>Select one</option>
+              <% departments.forEach(dept => { %>
+              <option value="<%= dept.id %>" <%= user.dept_id === dept.id ? 'selected' : '' %>>
+                <%= dept.dept_code %> - <%= dept.dept_desc %>
+              </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="account">Account</label>
+              <input type="text" id="account" name="account" class="form-control" value="<%= user.account %>">
+            </div>
+            <div class="form-group col-md-6">
+              <label for="sex">Gender</label>
+              <select id="sex" name="sex" class="form-control custom-select">
+                <option disabled>Select one</option>
+                <option value="M" <%= user.sex === 'M' ? 'selected' : '' %>>Male</option>
+                <option value="F" <%= user.sex === 'F' ? 'selected' : '' %>>Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-12 py-4">
+            <a href="/users" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success float-right">Submit</button>
+          </div>
+        </div>
+       </form>
+      </div>
+    </div>
+  </div>
+<% if (typeof query !== 'undefined' && query.status === 'success') { %>
+<script>
+  Swal.fire({
+    title: 'Success!',
+    text: 'User updated successfully!',
+    icon: 'success',
+    showConfirmButton: false,
+    timer: 5000,
+    timerProgressBar: true
+  });
+
+  setTimeout(() => {
+    window.location.href = '/users';
+  }, 5000);
+</script>
+<% } %>
+</section>

@@ -1,0 +1,56 @@
+<section class="content">
+  <div class="row py-3">
+    <div class="col-md-12">
+      <div class="card card-secondary">
+        <div class="card-header">
+          <h3 class="card-title">ADD Department</h3>
+        </div>
+        <% if (typeof errors != 'undefined' && errors.length > 0 ) { %>
+          <div class="py-2">
+            <div class="alert alert-danger alert-dismissible">
+              <ul class="mb-0">
+                <% errors.forEach(err => { %>
+                  <li><%= err.msg %></li>
+                <% }) %>
+              </ul>
+            </div>        
+          </div>
+         <% } %>
+        <form action="/departments/store" method="POST">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="dept_code">Department Code</label>
+            <input type="text" id="dept_code" name="dept_code" class="form-control" placeholder="Department Code..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="dept_desc">Department Name</label>
+            <input type="text" id="dept_desc" name="dept_desc" class="form-control" placeholder="Department Name..." required>
+          </div>
+
+          <div class="col-12 py-4">
+            <a href="/departments" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success float-right">Submit</button>
+          </div>
+        </div>
+       </form>
+      </div>
+    </div>
+  </div>
+<% if (typeof query !== 'undefined' && query.status === 'success') { %>
+<script>
+  Swal.fire({
+    title: 'Success!',
+    text: 'Department created successfully!',
+    icon: 'success',
+    showConfirmButton: false,
+    timer: 5000,
+    timerProgressBar: true
+  });
+
+  setTimeout(() => {
+    window.location.href = '/departments';
+  }, 5000);
+</script>
+<% } %>
+</section>

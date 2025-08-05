@@ -1,0 +1,113 @@
+<section class="content">
+  <div class="row py-3">
+    <div class="col-md-12">
+      <div class="card card-secondary">
+        <div class="card-header">
+          <h3 class="card-title">ADD USER</h3>
+        </div>
+         <% if (typeof errors != 'undefined' && errors.length > 0 ) { %>
+          <div class="py-2">
+            <div class="alert alert-danger alert-dismissible">
+              <ul class="mb-0">
+                <% errors.forEach(err => { %>
+                  <li><%= err.msg %></li>
+                <% }) %>
+              </ul>
+            </div>        
+          </div>
+         <% } %>
+        <form action="/users/store" method="POST">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="vname">Name</label>
+            <input type="text" id="vname" name="vname" class="form-control" placeholder="Full Name..." value="<%= oldData.vname || '' %>" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="account">Account</label>
+              <input type="text" id="account" name="account" class="form-control" placeholder="Account..." value="<%= oldData.account || '' %>" required>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" class="form-control" placeholder="Email..." value="<%= oldData.email || '' %>" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="storeh">WH Code</label>
+              <input type="text" id="storeh" name="storeh" class="form-control" placeholder="WH Code..." value="<%= oldData.storeh || '' %>" required>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="sex">Sex</label>
+              <select id="sex" name="sex" class="form-control custom-select">
+                <option disabled>Select one</option>
+                <option value="M" <%= oldData && oldData.sex === 'M' ? 'selected' : '' %>>Male</option>
+                <option value="F" <%= oldData && oldData.sex === 'F' ? 'selected' : '' %>>Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="inputDept">Department</label>
+              <select id="inputDept" name="dept_id" class="form-control custom-select">
+                <option disabled>Select one</option>
+                <% departments.forEach(dept => { %>
+                  <option value="<%= dept.id %>"><%= dept.dept_code %> - <%= dept.dept_desc %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="role_id">Roles</label>
+              <select id="role_id" name="role_id" class="form-control custom-select">
+                <option disabled>Select one</option>
+                <% roles.forEach(role => { %>
+                  <option value="<%= role.id %>"><%= role.role_name %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="passw" class="form-control" placeholder="Password..." required>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="cfm_passw">Confirm Password</label>
+              <input type="password" id="cfm_passw" name="cfm_passw" class="form-control" placeholder="Confirm Password..." required>
+            </div>
+          </div>
+
+          <div class="col-12 py-4">
+            <a href="/users" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success float-right">Submit</button>
+          </div>
+        </div>
+       </form>
+      </div>
+    </div>
+  </div>
+<% if (typeof query !== 'undefined' && query.status === 'success') { %>
+<script>
+  Swal.fire({
+    title: 'Success!',
+    text: 'User created successfully!',
+    icon: 'success',
+    showConfirmButton: false,
+    timer: 5000,
+    timerProgressBar: true
+  });
+
+  setTimeout(() => {
+    window.location.href = '/users';
+  }, 5000);
+</script>
+<% } %>
+</section>

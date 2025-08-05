@@ -1,0 +1,30 @@
+{
+  "development": {
+    "username": "user_local",
+    "password": "local@1234",
+    "database": "shtmdbs",
+    "host": "127.0.0.1",
+    "port": 50742,
+    "dialect": "mssql",
+    "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "enableArithAbort": true
+      }
+    }
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mssql"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mssql"
+  }
+}
