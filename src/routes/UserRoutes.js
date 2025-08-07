@@ -10,10 +10,15 @@ const {
   EditByUser,
   UpdateByUser,
   ChangePassword,
-  UpdatePasswordByUsr
+  UpdatePasswordByUsr,
+  GetAllPic,
+  CreatePic,
+  StorePic,
+  RemovePic,
+  EditPic
 } = require('../controllers/UserController');
 const { isAdmin } = require('../middleware/AuthMiddleware');
-const { userValidationRules, upsrValidationRules, upByusrValidationRules, changePasswordValidation } = require('../helper/UserValidator');
+const { userValidationRules, upsrValidationRules, upByusrValidationRules, changePasswordValidation, picValidationRules } = require('../helper/UserValidator');
 
 //Admin
 userRoutes.get('/users', isAdmin, GetAllUser);
@@ -28,5 +33,12 @@ userRoutes.get('/user/account/edit/:id', EditByUser);
 userRoutes.patch('/user/account/update/:id', UpdateByUser);
 userRoutes.get('/user/account/change-password/:id', ChangePassword);
 userRoutes.patch('/user/account/change-password/:id', changePasswordValidation, UpdatePasswordByUsr);
+
+//pic
+userRoutes.get('/pic', GetAllPic)
+userRoutes.get('/pic/create', CreatePic)
+userRoutes.post('/pic/store', picValidationRules, StorePic);
+userRoutes.get('/pic/edit/:id', EditPic);
+userRoutes.delete('/pic/remove/:id', RemovePic);
 
 module.exports = userRoutes;

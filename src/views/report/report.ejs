@@ -1,0 +1,102 @@
+<section class="content">
+  <div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="mb-0">Download Report</h1>
+    </div>
+
+
+<div class="row g-4">
+  <!-- Form 1: Download Excel -->
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">📥 Download Excel File</h5>
+      </div>
+      <div class="card-body">
+        <form method="GET" action="/report/export-excel">
+          <input type="hidden" name="action" value="download" />
+
+          <div class="row mb-3">
+            <label for="month" class="col-sm-4 col-form-label">Download by Month</label>
+            <div class="col-sm-8">
+              <input type="month" id="month" name="month" value="<%= month || '' %>" class="form-control" />
+            </div>
+          </div>
+
+          <div class="text-center text-muted fw-bold my-3">— OR —</div>
+
+          <div class="row mb-3">
+            <label for="start" class="col-sm-4 col-form-label">Start Date</label>
+            <div class="col-sm-8">
+              <input type="date" id="start" name="start" value="<%= start || '' %>" class="form-control" />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="end" class="col-sm-4 col-form-label">End Date</label>
+            <div class="col-sm-8">
+              <input type="date" id="end" name="end" value="<%= end || '' %>" class="form-control" />
+            </div>
+          </div>
+
+          <div class="mt-4 d-grid">
+            <button type="submit" class="btn btn-success">⬇ Download Excel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form 2: Send Excel to Email -->
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">📧 Send Excel to Email</h5>
+      </div>
+      <div class="card-body">
+        <form method="GET" action="/report/export-excel">
+          <input type="hidden" name="action" value="email" />
+
+          <div class="row mb-3">
+            <label for="email" class="col-sm-4 col-form-label">Email Address</label>
+            <div class="col-sm-8">
+              <input type="email" id="email" name="email" class="form-control" placeholder="email@example.com" required />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="month-email" class="col-sm-4 col-form-label">Select by Month</label>
+            <div class="col-sm-8">
+              <input type="month" id="month-email" name="month" class="form-control" />
+            </div>
+          </div>
+
+          <div class="text-center text-muted fw-bold my-3">— OR —</div>
+
+          <div class="row mb-3">
+            <label for="start-email" class="col-sm-4 col-form-label">Start Date</label>
+            <div class="col-sm-8">
+              <input type="date" id="start-email" name="start" class="form-control" />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="end-email" class="col-sm-4 col-form-label">End Date</label>
+            <div class="col-sm-8">
+              <input type="date" id="end-email" name="end" class="form-control" />
+            </div>
+          </div>
+
+          <div class="mt-4 d-grid">
+            <button type="submit" class="btn btn-primary">📤 Send to Email</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+</section>

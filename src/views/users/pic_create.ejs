@@ -1,0 +1,93 @@
+<section class="content">
+  <div class="row py-3">
+    <div class="col-md-12">
+      <div class="card card-secondary">
+        <div class="card-header">
+          <h3 class="card-title">ADD PIC</h3>
+        </div>
+         <% if (typeof errors != 'undefined' && errors.length > 0 ) { %>
+          <div class="py-2">
+            <div class="alert alert-danger alert-dismissible">
+              <ul class="mb-0">
+                <% errors.forEach(err => { %>
+                  <li><%= err.msg %></li>
+                <% }) %>
+              </ul>
+            </div>        
+          </div>
+         <% } %>
+        <form action="/pic/store" method="POST">
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="vname">Name</label>
+                <input type="text" id="vname" name="vname" class="form-control" placeholder="Full Name..." value="<%= oldData.vname || '' %>" required>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="empno">Empno</label>
+              <input type="text" id="empno" name="empno" class="form-control" placeholder="empno..." value="<%= oldData.empno || '' %>" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="storeh">WH Code</label>
+              <input type="text" id="storeh" name="storeh" class="form-control" placeholder="WH Code..." value="JS" readonly>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="sex">Sex</label>
+              <select id="sex" name="sex" class="form-control custom-select">
+                <option disabled>Select one</option>
+                <option value="M" <%= oldData && oldData.sex === 'M' ? 'selected' : '' %>>Male</option>
+                <option value="F" <%= oldData && oldData.sex === 'F' ? 'selected' : '' %>>Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="inputDept">Department</label>
+              <select id="inputDept" name="dept_id" class="form-control custom-select">
+                <option disabled>Select one</option>
+                <% departments.forEach(dept => { %>
+                    <% if (dept.id !== '5D8458DF-E4BD-4EC9-B92F-1E27500662E2') { %>
+                        <option value="<%= dept.id %>"><%= dept.dept_code %> - <%= dept.dept_desc %></option>
+                    <% } %>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label for="code">AUTHORITY</label>
+                <input type="text" id="code" name="code" class="form-control" placeholder="WH Code..." value="YYYYYYYY" readonly>
+            </div>              
+          </div>
+          
+          <div class="col-12 py-4">
+            <a href="/pic" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success float-right">Submit</button>
+          </div>
+        </div>
+       </form>
+      </div>
+    </div>
+  </div>
+<% if (typeof query !== 'undefined' && query.status === 'success') { %>
+<script>
+  Swal.fire({
+    title: 'Success!',
+    text: 'User pic created successfully!',
+    icon: 'success',
+    showConfirmButton: false,
+    timer: 5000,
+    timerProgressBar: true
+  });
+
+  setTimeout(() => {
+    window.location.href = '/pic';
+  }, 5000);
+</script>
+<% } %>
+</section>

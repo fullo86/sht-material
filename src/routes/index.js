@@ -6,6 +6,7 @@ const { isAuthenticated } = require('../middleware/AuthMiddleware');
 const deptRoutes = require('./DeptRoutes');
 const StagingRoutes = require('./StagingRoutes');
 const ActivityRoutes = require('./ActivityRoutes');
+const ReportRoutes = require('./ReportRoutes');
 const allRoutes = express.Router();
 
 allRoutes.use('/', AuthRoutes);
@@ -15,6 +16,7 @@ allRoutes.use('/', DashboardRoutes);
 allRoutes.use('/', deptRoutes);
 allRoutes.use('/', userRoutes);
 allRoutes.use('/', StagingRoutes);
+allRoutes.use('/', ReportRoutes);
 allRoutes.use('/', ActivityRoutes);
 
 module.exports = allRoutes;

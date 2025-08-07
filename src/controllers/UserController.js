@@ -142,7 +142,6 @@ const StoreUser = async (req, res) => {
         const manuf = 'J'
         const empno = account.slice(1, 6);
         const code = "YYYYYYYY"
-        const image = "public\images\default.png"
 
         const saltRounds = 12;
         const hashedPassw = await bcrypt.hash(passw, saltRounds);        
@@ -160,7 +159,6 @@ const StoreUser = async (req, res) => {
                       role_id,
                       storeh,
                       code,
-                      image,
                     }, { transaction });
 
         if (!result) {
@@ -287,14 +285,6 @@ const UpdateByUser = async (req, res) => {
       user.image = image;
       const result = await user.save({ transaction });    
 
-    // const newImage = removeFile(user.image)
-    // newImage = image
-    // const result = await user.update({
-    //               vname,
-    //               email,
-    //               newImage
-    //             }, { transaction });
-
     if (!result) {
       await transaction.rollback();
       return res.render('users/account', { 
@@ -390,12 +380,183 @@ const UpdatePasswordByUsr = async (req, res) => {
   }
 };
 
+
+const GetAllPic = async (req, res) => {
+  const pics = await User.findAll({ where: {role_id: 3 }})
+  const departments = await Dept.findAll();
+
+  res.render('users/pic', {
+    layout: 'layouts/template',
+    title: 'List PIC',
+    departments,
+    pics
+  });
+}
+
+const CreatePic = async (req, res) => {
+  const departments = await Dept.findAll();
+
+  res.render('users/pic_create', {
+    layout: 'layouts/template',
+    title: 'Add PIC',
+    departments,
+    errors: [],
+    query: req.query,
+    oldData: {}
+  });
+};
+
+const StorePic = async (req, res) => {
+    const departments = await Dept.findAll();
+    const transaction = await sequelize.transaction();
+
+    try {
+        const errors = validationResult(req);
+        errors.throw();
+
+        const { vname, empno, storeh, sex, dept_id, code } = req.body
+
+        const manuf = 'J'
+        const account = 'J' + empno
+        const passw = "PASSWORDPIC123"
+        const email = vname.replace(/\s+/g, '') + "@sht.ssbshoes.com"
+        const role_id = 3
+        const saltRounds = 12;
+        const hashedPassw = await bcrypt.hash(passw, saltRounds);        
+
+        const result = await User.create({
+                      id: uuidv4(),
+                      manuf,
+                      account,
+                      empno,
+                      vname,              
+                      passw: hashedPassw,
+                      sex,
+                      dept_id,
+                      email,
+                      role_id,
+                      storeh,
+                      code,
+                    }, { transaction });
+
+        if (!result) {
+          await transaction.rollback();
+          return res.render('users/pic_create', { 
+            layout: 'layouts/template', 
+            errors: [{ msg: 'Failed create pic user' }] 
+          });            
+        }
+
+        await transaction.commit();
+        res.redirect('/pic/create?status=success')
+    } catch (error) {
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
+
+      let errors = [];
+
+      if (error.errors) {
+        errors = error.errors
+      }
+
+      res.render('users/pic_create', {
+        layout: 'layouts/template',
+        title: 'Add PIC',
+        departments,
+        errors,
+        oldData: req.body
+      });
+    }    
+}
+
+const EditPic = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findOne({
+      where: { id}, 
+      include: [
+        {
+          model: Dept,
+          as: 'dept'
+        }
+      ]});
+
+    if (!user) {
+      return res.status(404).render('errors/404', { layout: false });
+    }
+
+    const departments = await Dept.findAll();
+
+    res.render('users/pic_edit', {
+      layout: 'layouts/template',
+      title: 'Edit PIC',
+      user,
+      departments,
+      query: req.query       
+    });
+  } catch (error) {
+    res.status(500).render('errors/500', { layout: false });
+  }
+};
+
+const RemovePic = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    try {
+      const id = req.params.id;
+      const user = await User.findOne({ where: { id }, lock: transaction.LOCK.UPDATE, transaction });
+
+      if (!user) {
+        return res.status(404).render('errors/404', { layout: false });
+      }
+
+      const result = await user.destroy({ transaction });
+
+      if (!result) {
+        await transaction.rollback();
+        return res.render('users/pic', { 
+          layout: 'layouts/template', 
+          errors: [{ msg: 'Failed delete pic user' }] 
+        });        
+      }
+
+      await transaction.commit();
+      res.redirect('/pic?status=success');
+    } catch (error) {
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
+
+      return res.render('users/pic', { 
+        layout: 'layouts/template', 
+        errors: [{ msg: error }] 
+      });
+    }
+}
+
 const removeFile = (pathway) => {
-  const fileName = path.basename(pathway); // ambil hanya 'default.png'
+  const fileName = path.basename(pathway);
 
   if (fileName !== 'default.png') {
     const fullPath = path.join(__dirname, '../../', pathway);
-    fs.unlink(fullPath, () => {}); // tidak perlu tangani error
+    fs.unlink(fullPath, () => {});
   }
 }
-module.exports = { GetAllUser, CreateUser, EditUser, UpdateUser, UpdateByUser, StoreUser, RemoveUser, EditByUser, ChangePassword, UpdatePasswordByUsr }
+
+module.exports = { 
+  GetAllUser, 
+  CreateUser, 
+  EditUser, 
+  UpdateUser, 
+  UpdateByUser, 
+  StoreUser, 
+  RemoveUser, 
+  EditByUser, 
+  ChangePassword, 
+  UpdatePasswordByUsr,
+  GetAllPic,
+  CreatePic,
+  StorePic,
+  EditPic,
+  RemovePic
+}

@@ -137,6 +137,16 @@
               </a>
             </li>
           <% } %>
+          <% if (role_id == 2) { %>          
+          <li class="nav-item">
+            <a href="/pic" class="nav-link <%= currentPath === '/pic' ? 'active' : '' %>">
+              <i class="nav-icon fas fa-users"></i>
+              <p>
+                PIC
+              </p>
+            </a>
+          </li>
+          <% } %>
           <li class="nav-item">
             <a href="/staging" class="nav-link <%= currentPath === '/storage' ? 'active' : '' %>">
               <i class="nav-icon fas fa-warehouse"></i>
@@ -145,12 +155,20 @@
               </p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="/report" class="nav-link <%= currentPath === '/report' ? 'active' : '' %>">
+              <i class="nav-icon fas fa-download"></i>
+              <p>
+                Report
+              </p>
+            </a>
+          </li>
           <% if (role_id == 1) { %>          
           <li class="nav-item">
             <a href="/activity-log" class="nav-link <%= currentPath === '/activity-log' ? 'active' : '' %>">
               <i class="nav-icon fas fa-history"></i>
               <p>
-                Storage Activity
+                Activity Log
               </p>
             </a>
           </li>

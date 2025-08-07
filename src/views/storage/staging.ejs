@@ -109,7 +109,43 @@
             </div>
             <div class="modal-body">
               <input type="hidden" id="modaloqtyId" name="id" />
-              <input type="number" class="form-control" name="oqty" value="0" required />
+              <div class="mb-3">
+                <label for="oqty" class="form-label">Qty Out</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="oqty"
+                  name="oqty"
+                  value="0"
+                  required
+                />
+              </div>
+
+              <!-- ✅ Tambahan Input ID Card Number -->
+              <div class="mb-3">
+                <label for="idcard" class="form-label">ID Card Number</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="idcard"
+                  name="idcard"
+                  placeholder="Enter ID Card Number"
+                  required
+                />
+              </div>
+
+                        <!-- ✅ Tambahan Input Name -->
+              <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  name="name"
+                  placeholder="PIC Name"
+                  readonly
+                />
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

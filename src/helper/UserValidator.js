@@ -16,6 +16,13 @@ const userValidationRules = [
     .withMessage('Confirm password not match.')
 ]
 
+const picValidationRules = [
+  body('vname').notEmpty().withMessage('Field is required.'),
+  body('vname').isLength({ min: 6}).withMessage('Name Column must atleast 6 Character.'),
+  body('empno').notEmpty().withMessage('Field is required.'),
+  body('empno').isLength({ min: 5}).withMessage('Empno Column must atleast 5 Character.'),
+]
+
 const upsrValidationRules = [
   body('vname').notEmpty().withMessage('Field is required.'),
   body('vname').isLength({ min: 6}).withMessage('Name Column must atleast 6 Character.'),
@@ -41,4 +48,4 @@ const changePasswordValidation = [
     .withMessage('Confirm password not match.')
 ]
 
-module.exports = { userValidationRules, upsrValidationRules, upByusrValidationRules, changePasswordValidation }
+module.exports = { userValidationRules, upsrValidationRules, upByusrValidationRules, changePasswordValidation, picValidationRules }

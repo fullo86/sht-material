@@ -71,7 +71,7 @@ const pullHPSystem = async (req, res) => {
     const data = await db.sequelize.query(`
       SELECT *
       FROM OPENQUERY([ondbs], '
-          SELECT
+          SELECT FIRST 1000
               u36.pgrpno,
               u06.purno,
               ''JS'' AS storeh,
