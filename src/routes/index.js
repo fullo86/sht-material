@@ -1,22 +1,28 @@
 const express = require('express');
-const userRoutes = require('./UserRoutes');
+const UserRoutes = require('./UserRoutes');
 const AuthRoutes = require('./AuthRoutes');
 const DashboardRoutes = require('./DashboardRoutes');
-const { isAuthenticated } = require('../middleware/AuthMiddleware');
-const deptRoutes = require('./DeptRoutes');
+const { isAuthenticated, isAdmin } = require('../middleware/AuthMiddleware');
+const DeptRoutes = require('./DeptRoutes');
 const StagingRoutes = require('./StagingRoutes');
 const ActivityRoutes = require('./ActivityRoutes');
 const ReportRoutes = require('./ReportRoutes');
-const allRoutes = express.Router();
+const PICRoutes = require('./PICRoutes');
+const ByUserRoutes = require('./ByUserRoutes');
+const AllRoutes = express.Router();
 
-allRoutes.use('/', AuthRoutes);
+AllRoutes.use('/', AuthRoutes);
 
-allRoutes.use(isAuthenticated);
-allRoutes.use('/', DashboardRoutes);
-allRoutes.use('/', deptRoutes);
-allRoutes.use('/', userRoutes);
-allRoutes.use('/', StagingRoutes);
-allRoutes.use('/', ReportRoutes);
-allRoutes.use('/', ActivityRoutes);
+AllRoutes.use(isAuthenticated);
+AllRoutes.use('/', DashboardRoutes);
+AllRoutes.use('/', ByUserRoutes);
+AllRoutes.use('/', PICRoutes);
+AllRoutes.use('/', StagingRoutes);
+AllRoutes.use('/', ReportRoutes);
 
-module.exports = allRoutes;
+AllRoutes.use(isAdmin);
+AllRoutes.use('/', isAdmin, DeptRoutes);
+AllRoutes.use('/', isAdmin, UserRoutes);
+AllRoutes.use('/', isAdmin, ActivityRoutes);
+
+module.exports = AllRoutes;

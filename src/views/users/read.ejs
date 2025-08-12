@@ -43,4 +43,28 @@
   </div>
 </section>
 
+<% if (status && status[0] === "success") { %>
+  <script>
+    Swal.fire({
+      title: 'Success!',
+      text: "<%= msg[0] %>",
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+  <% } %>
 
+<% if (status && status[0] === "failed") { %>
+  <script>
+    Swal.fire({
+      title: 'Failed!',
+      text: "<%= msg[0] %>",
+      icon: 'error',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+<% } %>

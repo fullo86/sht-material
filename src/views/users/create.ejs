@@ -20,13 +20,13 @@
         <div class="card-body">
           <div class="form-group">
             <label for="vname">Name</label>
-            <input type="text" id="vname" name="vname" class="form-control" placeholder="Full Name..." value="<%= oldData.vname || '' %>" required>
+            <input type="text" id="vname" name="vname" class="form-control" placeholder="Full Name..." value="<%= oldData.vname || '' %>" minlength="6" maxlength="255" required>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="account">Account</label>
-              <input type="text" id="account" name="account" class="form-control" placeholder="Account..." value="<%= oldData.account || '' %>" required>
+              <input type="text" id="account" name="account" class="form-control" placeholder="Account..." value="<%= oldData.account || '' %>" minlength="6" maxlength="6" required>
             </div>
 
             <div class="form-group col-md-6">
@@ -94,20 +94,30 @@
       </div>
     </div>
   </div>
-<% if (typeof query !== 'undefined' && query.status === 'success') { %>
-<script>
-  Swal.fire({
-    title: 'Success!',
-    text: 'User created successfully!',
-    icon: 'success',
-    showConfirmButton: false,
-    timer: 5000,
-    timerProgressBar: true
-  });
-
-  setTimeout(() => {
-    window.location.href = '/users';
-  }, 5000);
-</script>
-<% } %>
 </section>
+
+<% if (status && status[0] === "success") { %>
+  <script>
+    Swal.fire({
+      title: 'Success!',
+      text: "<%= msg[0] %>",
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+  <% } %>
+
+<% if (status && status[0] === "failed") { %>
+  <script>
+    Swal.fire({
+      title: 'Failed!',
+      text: "<%= msg[0] %>",
+      icon: 'error',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+<% } %>

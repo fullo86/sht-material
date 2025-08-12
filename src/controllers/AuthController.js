@@ -24,7 +24,7 @@ const login = async (req, res) => {
     };
     return res.redirect('/dashboard');
   } catch (error) {
-      res.render('auth/login', {
+      return res.render('auth/login', {
         layout: false,
         errors: [{msg: error}]
       });    
@@ -32,7 +32,7 @@ const login = async (req, res) => {
 };
 
 const showLogin = (req, res) => {
-  res.render('auth/login', {
+  return res.render('auth/login', {
     layout: false,
     title: 'Login',
     error: null
@@ -45,7 +45,7 @@ const logout = (req, res) => {
     if (err) {
       console.error('Logout error:', err);
     }
-    res.redirect('/login');
+    return res.redirect('/login');
   });
 };
 

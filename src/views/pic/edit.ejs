@@ -3,7 +3,7 @@
     <div class="col-md-12">
       <div class="card card-secondary">
         <div class="card-header mb-3">
-          <h3 class="card-title">ACCOUNT SETTING</h3>
+          <h3 class="card-title">EDIT PIC</h3>
         </div>
         <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
           <div class="alert alert-danger">
@@ -17,9 +17,9 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-4 d-flex flex-column align-items-center">
-              <img src="/<%= user.image %>" alt="User Image" class="img-fluid rounded mb-3">
+              <img src="/<%= pic.image %>" alt="pic Image" class="img-fluid rounded mb-3">
               <form 
-                action="/user/account/update/<%= user.id %>?_method=PATCH" 
+                action="/pic/update/<%= pic.id %>?_method=PATCH" 
                 method="POST" 
                 enctype="multipart/form-data" 
                 id="formUploadImage"
@@ -29,41 +29,55 @@
                   <label for="image">Upload New Image</label>
                   <div class="input-group">
                     <div class="custom-file">
-                      <input type="file" class="custom-file-input" id="image" name="image" value="<%= user.image %>">
+                      <input type="file" class="custom-file-input" id="image" name="image" value="<%= pic.image %>">
                       <label class="custom-file-label" for="image">Choose file</label>
                     </div>
                   </div>
                 </div>
             </div>
 
-            <!-- Form Data User -->
-            <div class="col-md-8 mt-2">
+            <!-- Form Data pic -->
+              <div class="col-md-8 mt-2">
                 <div class="row">
+
                   <div class="form-group col-md-12">
-                    <label for="account">Account</label>
-                    <input type="text" id="account" name="account" class="form-control" value="<%= user.account %>" disabled>
-                  </div>
-                  <div class="form-group col-md-12">
-                    <label for="dept">Department</label>
-                    <input type="text" id="dept" class="form-control" value="<%= user.dept ? (user.dept.dept_code + ' - ' + user.dept.dept_desc) : '' %>" disabled>
+                    <label for="empno">Empno</label>
+                    <input type="text" id="empno" class="form-control" placeholder="empno..." value="<%= pic.empno %>" minlength="5" maxlength="5" readonly>
                   </div>
 
                   <div class="form-group col-md-12">
                     <label for="vname">Name</label>
-                    <input type="text" id="vname" name="vname" class="form-control" value="<%= user.vname %>" placeholder="Full Name..." minlength="6" maxlength="255" required>
+                    <input type="text" id="vname" name="vname" class="form-control" placeholder="Full Name..." value="<%= pic.vname %>" minlength="6" maxlength="255" required>
                   </div>
 
                   <div class="form-group col-md-12">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" value="<%= user.email %>" placeholder="Email..." required>
+                    <label for="sex">Sex</label>
+                    <select id="sex" name="sex" class="form-control custom-select" required>
+                      <option disabled selected>Select one</option>
+                      <option value="M" <%= pic.sex === 'M' ? 'selected' : '' %>>Male</option>
+                      <option value="F" <%= pic.sex === 'F' ? 'selected' : '' %>>Female</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group col-md-12">
+                    <label for="inputDept">Department</label>
+                    <select id="inputDept" name="dept_id" class="form-control custom-select" required>
+                      <option disabled selected>Select one</option>
+                      <% departments.forEach(dept => { %>
+                        <% if (dept.dept_code != '700') { %>
+                          <option value="<%= dept.id %>" <%= pic.dept_id === dept.id ? 'selected' : '' %>>
+                            <%= dept.dept_code %> - <%= dept.dept_desc %>
+                          </option>
+                        <% } %>
+                      <% }) %>
+                    </select>
                   </div>
                 </div>
 
                 <div class="col-12 py-4">
-                  <button type="submit" class="btn btn-success float-right">Update Data</button>
+                  <button type="submit" class="btn btn-success float-right">Submit</button>
                 </div>
-              </form>
-            </div>
+              </div>
           </div>
         </div>
 

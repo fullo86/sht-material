@@ -117,36 +117,37 @@
                   id="oqty"
                   name="oqty"
                   value="0"
+                  step="0.01"
                   required
                 />
               </div>
 
-              <!-- ✅ Tambahan Input ID Card Number -->
               <div class="mb-3">
-                <label for="idcard" class="form-label">ID Card Number</label>
+                <label for="pic_empno" class="form-label">Employee Number</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="idcard"
-                  name="idcard"
-                  placeholder="Enter ID Card Number"
+                  id="pic_empno"
+                  name="pic_empno"
+                  placeholder="Enter Employee Number"
+                  minlength="5" 
+                  maxlength="5"
                   required
                 />
               </div>
 
-                        <!-- ✅ Tambahan Input Name -->
               <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
+                <label for="name" class="form-label">PIC Name</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="name"
-                  name="name"
+                  id="vname"
                   placeholder="PIC Name"
                   readonly
                 />
               </div>
             </div>
+
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <button type="submit" class="btn btn-primary">Submit</button>
@@ -155,7 +156,6 @@
         </form>
       </div>
     </div>
-
 
     <!-- In Qty Modal-->
     <div class="modal fade" id="qty2Modal" tabindex="-1" aria-hidden="true">
@@ -168,7 +168,7 @@
             </div>
             <div class="modal-body">
               <input type="hidden" id="modalQty2Id" name="id" />
-              <input type="number" class="form-control" name="iqty" value="0" required />
+              <input type="number" class="form-control" name="iqty" value="0" step="0.01" required />
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -280,10 +280,11 @@
                   <th>Kind</th>
                   <th>Qty</th>
                   <th>Remark</th>
+                  <th>PIC</th>
                 </tr>
               </thead>
               <tbody id="logTableBody">
-                <tr><td colspan="5" class="text-center">Loading data...</td></tr>
+                <tr><td colspan="6" class="text-center">Loading data...</td></tr>
               </tbody>
             </table>
           </div>
@@ -401,7 +402,7 @@
       button.addEventListener("click", () => {
         const stagingId = button.getAttribute("data-id");
 
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center">Loading data...</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Loading data...</td></tr>`;
 
         fetch(`/api/stglog?staging_id=${stagingId}`)
           .then(res => res.json())
@@ -413,6 +414,7 @@
 
             let html = "";
             data.forEach((log, i) => {
+              console.log(log,'ini logss data')
                 const detailQty = log.kind === 'I'
                   ? `<span class="text-success">In ${log.iqty} Qty</span>`
                   : `<span class="text-muted">Out ${log.oqty} Qty</span>`;
@@ -425,6 +427,7 @@
                   <td>${log.kind || '-'}</td>
                   <td>${log.iqty || log.oqty || '-'}</td>
                   <td>${detailQty}</td>
+                  <td>${log.pic ? `(${log.pic.empno}) ${log.pic.vname}` : '-'}</td>
                 </tr>`;
             });
 
@@ -432,7 +435,7 @@
           })
           .catch(err => {
             console.error(err);
-            tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Failed fetch data</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Failed fetch data</td></tr>`;
           });
       });
     });
@@ -512,39 +515,41 @@
         }
 
         if (!data.maxInQty && !data.maxOutQty) {
-          tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No data found!</td></tr>`;
+          tableBody.innerHTML = `<tr><td colspan="6" class="text-center">No data found!</td></tr>`;
         }
 
       })
       .catch(error => {
         console.error('Error fetching data:', error);
         document.getElementById('detailTableBody').innerHTML =
-          `<tr><td colspan="5" class="text-center text-danger">Failed to fetch!</td></tr>`;
+          `<tr><td colspan="6" class="text-center text-danger">Failed to fetch!</td></tr>`;
       });
   });
 </script>
 
-
 <script>
-  $(function() {
-    let Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 3000
-    });
+  const idcardInput = document.getElementById('pic_empno');
+  const nameInput = document.getElementById('vname');
 
-    $('.toastrDefaultSuccess').click(function() {
-      toastr.success('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
-    });
-    $('.toastrDefaultInfo').click(function() {
-      toastr.info('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
-    });
-    $('.toastrDefaultError').click(function() {
-      toastr.error('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
-    });
-    $('.toastrDefaultWarning').click(function() {
-      toastr.warning('Lorem ipsum dolor sit amet, consetetur sadipscing elitr.')
-    });
+  idcardInput.addEventListener('input', async function () {
+    const idcard = idcardInput.value.trim();
+
+    if (idcard.length >= 5) {
+      try {
+        const response = await fetch(`/api/pic/${idcard}`);
+
+        const data = await response.json();
+        console.log(data)
+        if (!data.name) {
+          alert(data.message)
+        }else{
+          nameInput.value = data.name;
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    } else {
+      nameInput.value = '';
+    }
   });
 </script>

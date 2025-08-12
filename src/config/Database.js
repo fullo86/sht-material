@@ -11,6 +11,7 @@ const sequelize = new Sequelize(
     dialect: process.env.DB_DIALECT || 'mssql',
     dialectOptions: {
       options: {
+        requestTimeout: 60000,
         encrypt: false,
         enableArithAbort: true
       }

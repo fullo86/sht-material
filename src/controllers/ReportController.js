@@ -65,7 +65,7 @@ const GetReports = async (req, res) => {
 
     const totalPages = Math.ceil(count / limit);
 
-    res.render('report/report', {
+    return res.render('report/report', {
       layout: "layouts/template",
       title: 'Report Data',
       stages: enhancedStages,
@@ -78,7 +78,7 @@ const GetReports = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching storage data:', error);
-    res.status(500).send("Internal server error.");
+    return res.status(500).send("Internal server error.");
   }
 };
 
@@ -202,7 +202,8 @@ const ExportExcel = async (req, res) => {
         ]
       });
 
-      req.flash('success_msg', 'Email sent successfully.');
+      req.flash('status', 'success.');
+      req.flash('msg', 'Email sent successfully.');
       return res.redirect('/report');
     }
 
@@ -211,12 +212,8 @@ const ExportExcel = async (req, res) => {
     res.send(buffer);
   } catch (err) {
     console.error("Error exporting excel:", err);
-    res.status(500).send("Failed to export Excel file.");
+    return res.status(500).send("Failed to export Excel file.");
   }
 };
-
-
-
-
 
 module.exports = { GetReports, ExportExcel };

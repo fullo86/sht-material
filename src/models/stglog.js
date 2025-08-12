@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.CHAR(36),
       allowNull: false
     },
+    pic_id: {
+      type: DataTypes.CHAR(36),
+      allowNull: true, // atau false tergantung kebutuhan
+    },
     kind: {
       type: DataTypes.CHAR(1),
       allowNull: false
@@ -47,6 +51,13 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'id',
       onDelete: 'CASCADE',
       as: 'staging'
+    });
+
+    StgLog.belongsTo(models.PIC, {
+      foreignKey: 'pic_id',
+      targetKey: 'id',
+      onDelete: 'SET NULL',
+      as: 'pic'
     });
   };
 

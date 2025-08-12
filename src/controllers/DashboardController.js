@@ -1,5 +1,5 @@
 const Dashboard = async (req, res) => {
-  res.render('dashboard/read', {
+  return res.render('dashboard/read', {
     layout: 'layouts/template',
     title: 'Dashboard',
   });

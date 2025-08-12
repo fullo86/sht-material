@@ -9,8 +9,9 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const allRoutes = require('./src/routes/index.js');
+const AllRoutes = require('./src/routes/index.js');
 const { fileConfig, Ext } = require('./src/config/Image.js');
+const FlashMessages = require('./src/helper/FlashMessage.js');
 const upload = multer({ storage: fileConfig, fileFilter: Ext });
 const port = process.env.PORT;
 
@@ -25,6 +26,7 @@ app.use(session({
   }
 }));
 app.use(flash());
+app.use(FlashMessages);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(methodOverride('_method'));
@@ -36,12 +38,6 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(upload.single('image'));
 
 app.use((req, res, next) => {
-  res.locals.success_msg = req.flash('success_msg');
-  res.locals.error_msg = req.flash('error_msg');
-  next();
-});
-
-app.use((req, res, next) => {
   const user = req.session.user;
 
   res.locals.id = user ? user.id : null;
@@ -50,7 +46,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/', allRoutes);
+app.use('/', AllRoutes);
 
 app.use((req, res) => {
   res.status(404).render(

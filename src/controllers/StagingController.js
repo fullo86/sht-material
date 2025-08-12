@@ -2,7 +2,9 @@ const db = require('../models');
 const { sequelize } = require('../models');
 const { Op } = require('sequelize');
 const Staging = db.Staging;
-const StgLog = db.StgLog
+const StgLog = db.StgLog;
+const User = db.User;
+const PIC = db.PIC;
 const { v4: uuidv4 } = require('uuid');
 const ActivityLog = require('../helper/ActivityLog');
 
@@ -51,18 +53,21 @@ const GetAllStaging = async (req, res) => {
         });
 
         const totalPages = Math.ceil(count / limit);
+        const users = await User.findAll()  
+        
 
-        res.render('storage/staging', {
+        return res.render('storage/staging', {
             layout: "layouts/template",
             title: 'Storage Data',
             stages: enhancedStages,
             currentPage: page,
             totalPages,
             search,
+            users
         });
     } catch (error) {
         console.error('Error fetching storage data:', error);
-        res.status(500).send("Internal server error.");
+        return res.status(500).send("Internal server error.");
     }
 };
 
@@ -103,7 +108,9 @@ const pullHPSystem = async (req, res) => {
     });
 
     if (!data.length) {
-      return res.status(404).send("0 Data pulled.");
+      req.flash('status', 'failed');
+      req.flash('msg', 'Failed Pull The Data.');
+      return res.redirect('/staging');
     }
 
     const tempTable = data.map(item => ({
@@ -149,24 +156,24 @@ for (const row of tempTable) {
   })
 
       if (!result) {
-      req.flash('error_msg', 'Failed create data');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Failed create data');
       return res.redirect('/staging');
     }
 }
 
-    const empno = req.session.user.account || 'Unknown';
-    const username = req.session.user.vname || 'Unknown';
-
     ActivityLog({
-      empno,
-      username,
+      account: req.session?.user?.account,
+      username: req.session?.user?.vname,
       msgs: `Pull data from HPSystem`
     });
 
-    res.redirect('/staging');
+    req.flash('status', 'success');
+    req.flash('msg', 'Data Successfully Pulled');
+    return res.redirect('/staging');
   } catch (err) {
     console.log(err)
-    res.status(500).send("Failed to pull data from HP.");
+    return res.status(500).send("Failed to pull data from HP.");
   }
 };
  
@@ -181,12 +188,16 @@ const GetLogsByStagingId = async (req, res) => {
     const logs = await StgLog.findAll({
       where: { staging_id: stagingId },
       order: [['created_at', 'DESC']],
+      include: [{
+        model: PIC,
+        as: 'pic'
+      }]
     });
 
-    res.json(logs);
+    return res.json(logs);
   } catch (error) {
     console.error('Error fetching stgLog:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -225,7 +236,7 @@ const GetStagingDetail = async (req, res) => {
       },
       attributes: ['created_at', 'storeh'], 
     });
-    res.json({
+    return res.json({
       maxInQty: maxInQty || 0,
       maxOutQty: maxOutQty || 0,
       storehIn: maxInDate ? maxInDate.storeh : 'N/A',
@@ -237,7 +248,7 @@ const GetStagingDetail = async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching top qty:', error);
-    res.status(500).send("Internal server error.");
+    return res.status(500).send("Internal server error.");
   }
 };
 
@@ -247,13 +258,15 @@ const stockInQty = async (req, res) => {
     const { id, iqty } = req.body;
 
     if (!id || !iqty) {
-      req.flash('error_msg', 'Field required');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Field required');
       return res.redirect('/staging');
     }
 
     const inQty = parseFloat(iqty);
     if (isNaN(inQty) || inQty <= 0) {
-      req.flash('error_msg', 'Qty at least > 0');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Qty at least > 0');
       return res.redirect('/staging');
     }
 
@@ -264,13 +277,14 @@ const stockInQty = async (req, res) => {
     });
 
     if (!record) {
-      req.flash('error_msg', 'Data not found');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Data not found');
       return res.redirect('/staging');
     }
 
     const newQty = record.sqty + inQty;
 
-    const resOqty = await StgLog.create({
+    const resIqty = await StgLog.create({
       id: uuidv4(),
       staging_id: record.id,
       kind: 'I',
@@ -280,9 +294,10 @@ const stockInQty = async (req, res) => {
       oqty: record.outQty
     }, { transaction });
 
-    if (!resOqty) {
+    if (!resIqty) {
       await transaction.rollback();
-      req.flash('error_msg', 'Failed to create the data');
+      req.flash('status', 'failed');
+      req.flash('error_msg', 'Failed Stock In Process');
       return res.redirect('/staging');
     }
 
@@ -299,22 +314,21 @@ const stockInQty = async (req, res) => {
 
     if (!result) {
       await transaction.rollback();
-      req.flash('error_msg', 'Failed update storage stock');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Failed update storage stock');
       return res.redirect('/staging');
     }
 
     await transaction.commit();
 
-    const empno = req.session?.user?.account || 'Unknown';
-    const username = req.session?.user?.vname || 'Unknown';
-
     ActivityLog({
-      empno,
-      username,
-      msgs: `Stock-In ${inQty} for Purchase no ${record.purno}`
+      account: req.session?.user?.account,
+      username: req.session?.user?.vname,
+      msgs: `Stock-In ${inQty} qty for Purchase no ${record.purno}`
     });
 
-    req.flash('success_msg', `Stock-In ${inQty} success!`);
+    req.flash('status', `success`);
+    req.flash('msg', `Stock-In ${inQty} qty success!`);
     return res.redirect('/staging');
   } catch (error) {
       if (!transaction.finished) {
@@ -328,16 +342,26 @@ const stockInQty = async (req, res) => {
 const stockOutQty = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    const { id, oqty } = req.body;
+    const { id, oqty, pic_empno } = req.body;
 
     if (!id || !oqty) {
-      req.flash('error_msg', 'Field required');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Field required');
       return res.redirect('/staging');
     }
 
     const outQty = parseFloat(oqty);
     if (isNaN(outQty) || outQty <= 0) {
-      req.flash('error_msg', 'Qty at least > 0');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Qty at least > 0');
+      return res.redirect('/staging');
+    }
+
+    const pic = await PIC.findOne({ where: { empno: pic_empno } });
+
+    if (!pic) {
+      req.flash('status', 'failed');
+      req.flash('msg', 'PIC not found for the provided Employee Number');
       return res.redirect('/staging');
     }
 
@@ -348,19 +372,22 @@ const stockOutQty = async (req, res) => {
     });
 
     if (!record) {
-      req.flash('error_msg', 'Data not found');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Data not found');
       return res.redirect('/staging');
     }
 
     const newQty = record.sqty - outQty;
     if (record.sqty < outQty) {
-      req.flash('error_msg', 'Outqty > stock qty');
+      req.flash('status', 'failed');
+      req.flash('msg', 'Outqty > stock qty');
       return res.redirect('/staging');
     }
 
     const resOqty = await StgLog.create({
       id: uuidv4(),
       staging_id: record.id,
+      pic_id: pic.id,
       kind: 'O',
       storeh: record.storeh,
       sqty: newQty,
@@ -370,7 +397,8 @@ const stockOutQty = async (req, res) => {
 
     if (!resOqty) {
       await transaction.rollback();
-      req.flash('error_msg', 'Failed to create the data');
+      req.flash('status', 'failed');
+      req.flash('error_msg', 'Stock Out Process Failed.');
       return res.redirect('/staging');
     }
 
@@ -387,22 +415,21 @@ const stockOutQty = async (req, res) => {
 
     if (!result) {
       await transaction.rollback();
-      req.flash('error_msg', 'Failed update storage data');
+      req.flash('status', 'failed');
+      req.flash('error_msg', 'Failed Update Storage Data');
       return res.redirect('/staging');
     }
 
     await transaction.commit();
 
-    const empno = req.session?.user?.account || 'Unknown';
-    const username = req.session?.user?.vname || 'Unknown';
-
     ActivityLog({
-      empno,
-      username,
-      msgs: `Stock-Out ${outQty} for Purchase no ${record.purno}`
+      account: req.session?.user?.account,
+      username: req.session?.user?.vname,
+      msgs: `Stock-Out ${outQty} qty for Purchase no ${record.purno}`
     });
 
-    req.flash('success_msg', `Stock-Out ${outQty} success`);
+    req.flash('status', 'success');
+    req.flash('msg', `Stock-Out ${outQty} qty success`);
     return res.redirect('/staging');
   } catch (error) {
     await transaction.rollback();
@@ -411,4 +438,19 @@ const stockOutQty = async (req, res) => {
   }
 };
 
-module.exports = { GetAllStaging, pullHPSystem, GetLogsByStagingId, GetStagingDetail, stockOutQty, stockInQty };
+const CheckPIC = async (req, res) => {
+    try {
+        const pic = await PIC.findOne({ where: { empno: req.params.empno } });
+
+        if (!pic) {
+        return res.status(404).json({ message: 'PIC not found' });
+        }
+
+        return res.json({ name: pic.vname });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+module.exports = { GetAllStaging, pullHPSystem, GetLogsByStagingId, GetStagingDetail, stockOutQty, stockInQty, CheckPIC };

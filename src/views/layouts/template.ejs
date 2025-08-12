@@ -113,22 +113,35 @@
                with font-awesome or any other icon font library -->
           <li class="nav-item">
             <a href="/dashboard" class="nav-link <%= currentPath === '/dashboard' ? 'active' : '' %>">
-              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <i class="nav-icon fas fa-home"></i>
               <p>
                 Dashboard
               </p>
             </a>
           </li>
-          <% if (role_id == 1) { %>          
+          <% if (role_id == 1) { %>
           <li class="nav-item">
-            <a href="/users" class="nav-link <%= currentPath === '/users' ? 'active' : '' %>">
+            <a href="#" class="nav-link">
               <i class="nav-icon fas fa-users"></i>
               <p>
-                Users
+                 Users
+                <i class="fas fa-angle-left right"></i>
               </p>
             </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="/users" class="nav-link <%= currentPath === '/users' ? 'active' : '' %>">
+                  <p>List Users</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/pic" class="nav-link <%= currentPath === '/pic' ? 'active' : '' %>">
+                  <p>PIC</p>
+                </a>
+              </li>
+            </ul>
           </li>
-            <li class="nav-item">
+          <li class="nav-item">
               <a href="/departments" class="nav-link <%= currentPath === '/departments' ? 'active' : '' %>">
                 <i class="nav-icon fas fa-building"></i>
                 <p>
@@ -183,13 +196,13 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="/user/account/edit/<%= id %>" class="nav-link">
+                <a href="/user/account/edit/<%= id %>" class="nav-link <%= currentPath === ('/user/account/edit/' + id) ? 'active' : '' %>">
                   <i class="far fa-user nav-icon"></i>
                   <p>Account</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="/user/account/change-password/<%= id %>" class="nav-link">
+                <a href="/user/account/change-password/<%= id %>" class="nav-link <%= currentPath === ('/user/account/change-password/' + id) ? 'active' : '' %>">
                   <i class="fa fa-lock nav-icon"></i>
                   <p>Change Password</p>
                 </a>
@@ -220,7 +233,7 @@
     <strong>Copyright &copy; 2025 <a href="https://adminlte.io">SHT IT</a>.</strong>
     All rights reserved.
     <div class="float-right d-none d-sm-inline-block">
-      <b>Version</b> 3.2.0
+      <b>Version</b> 1.0.0
     </div>
   </footer>
 
@@ -270,5 +283,31 @@
 <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>  -->
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
 <script src="/public/assets/dist/js/pages/dashboard.js"></script>
+
+<% if (status && status[0] === "success") { %>
+  <script>
+    Swal.fire({
+      title: 'Success!',
+      text: "<%= msg[0] %>",
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+  <% } %>
+
+<% if (status && status[0] === "failed") { %>
+  <script>
+    Swal.fire({
+      title: 'Failed!',
+      text: "<%= msg[0] %>",
+      icon: 'error',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+<% } %>
 </body>
 </html>

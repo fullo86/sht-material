@@ -1,5 +1,6 @@
 const { sequelize } = require('../models');
 const { validationResult } = require('express-validator');
+const ActivityLog = require('../helper/ActivityLog');
 const { v4: uuidv4 } = require('uuid');
 const db = require("../models");
 const Dept = db.Dept;
@@ -7,7 +8,7 @@ const Dept = db.Dept;
 const GetAllDepts = async (req, res) => {
     const departments = await Dept.findAll();
 
-    res.render('departments/read', {
+    return res.render('departments/read', {
         layout: 'layouts/template',
         title: 'Departments',
         departments
@@ -15,7 +16,7 @@ const GetAllDepts = async (req, res) => {
 }
 
 const CreateDept = async (req, res) => {
-    res.render('departments/create', {
+    return res.render('departments/create', {
         layout: 'layouts/template',
         title: 'Add Department',
         query: req.query    
@@ -40,14 +41,21 @@ const StoreDept = async (req, res) => {
 
         if (!result) {
           await transaction.rollback();
-          return res.render('departments/read', { 
-            layout: 'layouts/template', 
-            errors: [{ msg: 'Failed create department' }] 
-          });                      
+          req.flash("status", "failed");    
+          req.flash("msg", "Create Department Failed.");                        
+          return res.redirect('/departments');
         }
 
+        ActivityLog({
+          account: req.session?.user?.account,
+          username: req.session?.user?.vname,
+          msgs: `Create New Department (${result.dataValues.dept_code}) ${result.dataValues.dept_desc} `
+        });
+
         await transaction.commit();
-        res.redirect('/departments/create?status=success')
+        req.flash("status", "success");    
+        req.flash("msg", "Successfully Create New Department.");                        
+        return res.redirect('/departments')
     } catch (error) {
         if (!transaction.finished) {
           await transaction.rollback();
@@ -58,7 +66,7 @@ const StoreDept = async (req, res) => {
         if (error.errors) {
           errors = error.errors
         }
-        res.render('departments/create', {
+        return res.render('departments/create', {
             layout: 'layouts/template',
             title: 'Add Department',
             errors
@@ -75,7 +83,7 @@ const EditDept = async (req, res) => {
           return res.status(404).render('errors/404', { layout: false });
         }
 
-        res.render('departments/edit', {
+        return res.render('departments/edit', {
             layout: 'layouts/template',
             title: 'Edit Department',
             dept,
@@ -104,14 +112,21 @@ const UpdateDept = async (req, res) => {
     
     if (!result) {
       await transaction.rollback();
-      return res.render('departments/edit', { 
-        layout: 'layouts/template', 
-        errors: [{ msg: 'Failed update department' }] 
-      });            
+      req.flash("status", "failed");    
+      req.flash("msg", "Failed to Update Department.");                        
+      return res.redirect(`/department/edit/${dept.id}`)
     }
-    
+
+    ActivityLog({
+      account: req.session?.user?.account,
+      username: req.session?.user?.vname,
+      msgs: `Department Update for (${result.dataValues.dept_code}) ${result.dataValues.dept_desc} `
+    });    
+
     await transaction.commit();
-    res.redirect(`/department/edit/${dept.id}?status=success`);
+    req.flash("status", "success");    
+    req.flash("msg", "Department Data Successfully Updated.");                        
+    return res.redirect(`/departments`);
   } catch (error) {
       if (!transaction.finished) {
         await transaction.rollback();
@@ -139,14 +154,21 @@ const RemoveDept = async (req, res) => {
 
     if (!result) {
       await transaction.rollback();
-      return res.render('departments/read', { 
-        layout: 'layouts/template', 
-        errors: [{ msg: 'Failed delete department' }] 
-      });      
+      req.flash("status", "failed");    
+      req.flash("msg", "Delete Department Failed.");                        
+      return res.redirect('/departments');
     }
 
+    ActivityLog({
+      account: req.session?.user?.account,
+      username: req.session?.user?.vname,
+      msgs: `Deleted Department (${result.dataValues.dept_code}) ${result.dataValues.dept_desc} `
+    });    
+
     await transaction.commit();
-    res.redirect('/departments?status=success');
+    req.flash("status", "success");    
+    req.flash("msg", "Department Successfully Deleted .");
+    return res.redirect('/departments');
   } catch (error) {
       if (!transaction.finished) {
         await transaction.rollback();

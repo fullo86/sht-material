@@ -20,12 +20,12 @@
         <div class="card-body">
           <div class="form-group">
             <label for="dept_code">Department Code</label>
-            <input type="text" id="dept_code" name="dept_code" class="form-control" placeholder="Department Code..." required>
+            <input type="text" id="dept_code" name="dept_code" class="form-control" placeholder="Department Code..." minlength="3" maxlength="3" required>
           </div>
 
           <div class="form-group">
             <label for="dept_desc">Department Name</label>
-            <input type="text" id="dept_desc" name="dept_desc" class="form-control" placeholder="Department Name..." required>
+            <input type="text" id="dept_desc" name="dept_desc" class="form-control" placeholder="Department Name..." minlength="1" maxlength="20" required>
           </div>
 
           <div class="col-12 py-4">
@@ -37,20 +37,30 @@
       </div>
     </div>
   </div>
-<% if (typeof query !== 'undefined' && query.status === 'success') { %>
-<script>
-  Swal.fire({
-    title: 'Success!',
-    text: 'Department created successfully!',
-    icon: 'success',
-    showConfirmButton: false,
-    timer: 5000,
-    timerProgressBar: true
-  });
-
-  setTimeout(() => {
-    window.location.href = '/departments';
-  }, 5000);
-</script>
-<% } %>
 </section>
+
+<% if (status && status[0] === "success") { %>
+  <script>
+    Swal.fire({
+      title: 'Success!',
+      text: "<%= msg[0] %>",
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+  <% } %>
+
+<% if (status && status[0] === "failed") { %>
+  <script>
+    Swal.fire({
+      title: 'Failed!',
+      text: "<%= msg[0] %>",
+      icon: 'error',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+<% } %>

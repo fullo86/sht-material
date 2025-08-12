@@ -1,5 +1,5 @@
 const express = require('express');
-const userRoutes = express.Router();
+const UserRoutes = express.Router();
 const {
   GetAllUser,
   CreateUser,
@@ -7,38 +7,14 @@ const {
   UpdateUser,
   StoreUser,
   RemoveUser,
-  EditByUser,
-  UpdateByUser,
-  ChangePassword,
-  UpdatePasswordByUsr,
-  GetAllPic,
-  CreatePic,
-  StorePic,
-  RemovePic,
-  EditPic
 } = require('../controllers/UserController');
-const { isAdmin } = require('../middleware/AuthMiddleware');
-const { userValidationRules, upsrValidationRules, upByusrValidationRules, changePasswordValidation, picValidationRules } = require('../helper/UserValidator');
+const { userValidationRules, upsrValidationRules } = require('../helper/UserValidator');
 
-//Admin
-userRoutes.get('/users', isAdmin, GetAllUser);
-userRoutes.get('/users/create', isAdmin, CreateUser);
-userRoutes.post('/users/store', isAdmin, userValidationRules, StoreUser);
-userRoutes.get('/users/edit/:id', isAdmin, EditUser);
-userRoutes.patch('/users/update/:id', isAdmin, upsrValidationRules, UpdateUser);
-userRoutes.delete('/users/remove/:id', isAdmin, RemoveUser);
+UserRoutes.get('/users', GetAllUser);
+UserRoutes.get('/users/create', CreateUser);
+UserRoutes.post('/users/store', userValidationRules, StoreUser);
+UserRoutes.get('/users/edit/:id', EditUser);
+UserRoutes.patch('/users/update/:id', upsrValidationRules, UpdateUser);
+UserRoutes.delete('/users/remove/:id', RemoveUser);
 
-//User
-userRoutes.get('/user/account/edit/:id', EditByUser);
-userRoutes.patch('/user/account/update/:id', UpdateByUser);
-userRoutes.get('/user/account/change-password/:id', ChangePassword);
-userRoutes.patch('/user/account/change-password/:id', changePasswordValidation, UpdatePasswordByUsr);
-
-//pic
-userRoutes.get('/pic', GetAllPic)
-userRoutes.get('/pic/create', CreatePic)
-userRoutes.post('/pic/store', picValidationRules, StorePic);
-userRoutes.get('/pic/edit/:id', EditPic);
-userRoutes.delete('/pic/remove/:id', RemovePic);
-
-module.exports = userRoutes;
+module.exports = UserRoutes;
